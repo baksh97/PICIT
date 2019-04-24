@@ -1,6 +1,8 @@
 package com.example.kashish.picit;
 
+import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -8,14 +10,21 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
+
+import static com.example.kashish.picit.takePic.REQUEST_CAMERA;
 
 public class MainActivity extends AppCompatActivity {
 
 //    private ListView mListView;
     private RecyclerView rv_main_active,rv_main_inactive;
     private FloatingActionButton camera_fab, gallery_fab,add_grp_fab;
+    Intent cameraIntent;
 
     static String [] active ={"Hiren", "Pratik", "Dhruv", "Narendra", "Piyush", "Priyank"};
     static String [] inactive ={"Kirit", "Miral", "Bhushan", "Jiten", "Ajay", "Kamlesh"};
@@ -75,6 +84,44 @@ public class MainActivity extends AppCompatActivity {
         add_grp_fab = (FloatingActionButton) findViewById(R.id.floatingActionButton_addGrp);
     }
 
+    protected void onActivityResult(int requestCode, int resultCode, Intent data)
+    {
+        if (requestCode == REQUEST_CAMERA && resultCode == Activity.RESULT_OK)
+        {
+            Bitmap photo = (Bitmap) data.getExtras().get("data");
+//            captured_iv.setImageBitmap(photo);
+            String path = saveToInternalStorage(photo);
+//            Toast.makeText(takePic.this, "image stored at: "+path, Toast.LENGTH_SHORT).show();
+            startActivityForResult(cameraIntent, REQUEST_CAMERA);
+        }
+    }
+
+    private String saveToInternalStorage(Bitmap bitmapImage){
+//        ContextWrapper cw = new ContextWrapper(getApplicationContext());
+        // path to /data/data/yourapp/app_data/imageDir
+        SimpleDateFormat formatter = new SimpleDateFormat("ddMMyyyyHHmmss");
+        Date date = new Date();
+        File mypath = new File(this.getFilesDir(), "profile"+ formatter.format(date) +".jpg");
+        // Create imageDir
+//        File mypath=new File(directory,"profile.jpg");
+
+        FileOutputStream fos = null;
+        try {
+            fos = new FileOutputStream(mypath);
+            // Use the compress method on the BitMap object to write image to the OutputStream
+            bitmapImage.compress(Bitmap.CompressFormat.PNG, 100, fos);
+            fos.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+//            try {
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+        return mypath.getAbsolutePath();
+    }
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -97,10 +144,19 @@ public class MainActivity extends AppCompatActivity {
         rv_main_active.setAdapter(active_adapter);
         rv_main_inactive.setAdapter(inactive_adapter);
 
+//        camera_fab.setOnLongClickListener(new View.OnLongClickListener() {
+//            @Override
+//            public boolean onLongClick(View v) {
+//                return false;
+//            }
+//        });
+
         camera_fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(MainActivity.this, takePic.class));
+//                startActivity(new Intent(MainActivity.this, takePic.class));
+                cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
+                startActivityForResult(cameraIntent, REQUEST_CAMERA);
             }
         });
 

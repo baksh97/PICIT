@@ -39,7 +39,8 @@
         <activity android:name=".gallery" />
         <activity android:name=".Chat" />
         <activity android:name=".Filters" />
-        <activity android:name=".fullImage"></activity>
+        <activity android:name=".fullImage" />
+        <activity android:name=".create_album"></activity>
     </application>
 
 </manifest>
