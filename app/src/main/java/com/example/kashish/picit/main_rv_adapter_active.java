@@ -25,11 +25,13 @@ public class main_rv_adapter_active extends RecyclerView.Adapter<main_rv_adapter
     private static final String TAG = "main_rv_adapter";
     private ArrayList<String> chatNames;
     private ArrayList<Bitmap> chatImages;
+    private ArrayList<String> chatIds;
     private Context mContext;
 
 
-    public main_rv_adapter_active(ArrayList<String> items,ArrayList<Bitmap> chatImages, Context mContext) {
+    public main_rv_adapter_active(ArrayList<String> items,ArrayList<String> chatIds,ArrayList<Bitmap> chatImages, Context mContext) {
         this.chatImages = chatImages;
+        this.chatIds = chatIds;
         this.chatNames = items;
         this.mContext = mContext;
     }
@@ -75,6 +77,7 @@ public class main_rv_adapter_active extends RecyclerView.Adapter<main_rv_adapter
         @Override
         public void onClick(View v) {
             int position = getAdapterPosition();
+            Chat.currentChatName = chatNames.get(position)+chatIds.get(position);
             Intent intent = new Intent(mContext, Chat.class);
             intent.putExtra("chatPos",position);
             mContext.startActivity(intent);
@@ -91,7 +94,7 @@ public class main_rv_adapter_active extends RecyclerView.Adapter<main_rv_adapter
                     switch (item.getItemId()){
                         case R.id.chat_inactivate:
 //                            Toast.makeText(mContext, "profle update 1",Toast.LENGTH_SHORT).show();
-                            MainActivity.active2inactive(getAdapterPosition());
+                            MainActivity.active2inactive(getAdapterPosition(),mContext);
                             break;
 
 //                        case R.id.profile_update2:

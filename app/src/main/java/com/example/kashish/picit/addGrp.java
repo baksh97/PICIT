@@ -39,9 +39,10 @@ public class addGrp extends AppCompatActivity {
 
                 g.members = new ArrayList<>(Arrays.asList(members));
                 g.name = text;
-                g.id = text;
-                MainActivity.addGrp(g);
+                g.id = allmember;
+                MainActivity.addGrp(g,addGrp.this);
                 startActivity(new Intent(addGrp.this, MainActivity.class));
+                finish();
             }
         });
 

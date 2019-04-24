@@ -34,5 +34,13 @@
             android:layout_weight="1"
             android:elevation="8dp" />
 
+        <ImageView
+            android:id="@+id/imageView_row_chat_3"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_margin="8dp"
+            android:layout_weight="1"
+            android:elevation="8dp" />
+
     </LinearLayout>
 </android.support.constraint.ConstraintLayout>
