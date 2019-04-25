@@ -18,6 +18,7 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class main_rv_adapter_active extends RecyclerView.Adapter<main_rv_adapter_active.ViewHolder>{
 
@@ -28,6 +29,7 @@ public class main_rv_adapter_active extends RecyclerView.Adapter<main_rv_adapter
     private ArrayList<String> chatIds;
     private Context mContext;
 
+    static int[] backGrounds = {R.drawable.main_circle_grp_blue_dark,R.drawable.main_circle_grp_green_dark,R.drawable.main_circle_grp_orange_dark,R.drawable.main_circle_grp_blue_light,R.drawable.main_circle_grp_green_light,R.drawable.main_circle_grp_orange_light};
 
     public main_rv_adapter_active(ArrayList<String> items,ArrayList<String> chatIds,ArrayList<Bitmap> chatImages, Context mContext) {
         this.chatImages = chatImages;
@@ -46,6 +48,7 @@ public class main_rv_adapter_active extends RecyclerView.Adapter<main_rv_adapter
     @Override
     public void onBindViewHolder(@NonNull main_rv_adapter_active.ViewHolder holder, int position) {
         holder.chatName_tv.setText(chatNames.get(position));
+        holder.chatImage_tv.setText(String.valueOf(chatNames.get(position).charAt(0)).toUpperCase());
 //        holder.chatImage_iv.setImageBitmap(chatImages.get(position));
 
 //        holder.
@@ -61,13 +64,16 @@ public class main_rv_adapter_active extends RecyclerView.Adapter<main_rv_adapter
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener{
         ConstraintLayout completeLayout;
         TextView chatName_tv;
-        ImageView chatImage_iv;
+        TextView chatImage_tv;
 
         public ViewHolder(View itemView) {
             super(itemView);
 
-            chatImage_iv = (ImageView) itemView.findViewById(R.id.chat_image_iv);
+            chatImage_tv = (TextView) itemView.findViewById(R.id.chat_image_tv);
             chatName_tv = (TextView) itemView.findViewById(R.id.chat_name_tv);
+
+            int rand = new Random().nextInt(6);
+            chatImage_tv.setBackgroundResource(backGrounds[rand]);
 
             itemView.setOnClickListener(this);
             itemView.setOnLongClickListener(this);

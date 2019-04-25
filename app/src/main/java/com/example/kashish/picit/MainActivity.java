@@ -10,6 +10,9 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
@@ -65,7 +68,7 @@ public class MainActivity extends AppCompatActivity {
                 outputStream = new FileOutputStream(file);
             }
 
-            Toast.makeText(context,"chat stored in file: "+file.getAbsolutePath(),Toast.LENGTH_SHORT).show();
+//            Toast.makeText(context,"chat stored in file: "+file.getAbsolutePath(),Toast.LENGTH_SHORT).show();
             outputStream.write((g.name+"\t"+g.id+"\tactive\n").getBytes());
             outputStream.close();
 
@@ -76,7 +79,7 @@ public class MainActivity extends AppCompatActivity {
 
             while ((line = br.readLine()) != null) {
 
-                Toast.makeText(context, "Read line: " + line, Toast.LENGTH_SHORT).show();
+//                Toast.makeText(context, "Read line: " + line, Toast.LENGTH_SHORT).show();
                 Log.d(TAG, "Line: " + line);
             }
 
@@ -202,6 +205,17 @@ public class MainActivity extends AppCompatActivity {
         inactive_adapter.notifyDataSetChanged();
     }
 
+    public void deleteRecursive(File fileOrDirectory) {
+
+        if (fileOrDirectory.isDirectory()) {
+            for (File child : fileOrDirectory.listFiles()) {
+                deleteRecursive(child);
+            }
+        }
+
+        fileOrDirectory.delete();
+    }
+
     void initChats(){
         active_chat_ids = new ArrayList<>();
         active_chats = new ArrayList<>();
@@ -216,6 +230,9 @@ public class MainActivity extends AppCompatActivity {
         try {
             for(File f: this.getFilesDir().listFiles()){
                 Log.d(TAG,"file: "+f.getAbsolutePath());
+//                if(f.isDirectory()){
+//                    deleteRecursive(f);
+//                }
 //                if(f.getAbsolutePath().endsWith("/chats_picit")){
 //                    Log.d(TAG,"found file: "+f.getAbsolutePath());
 //                    f.delete();
@@ -229,7 +246,7 @@ public class MainActivity extends AppCompatActivity {
 
             while ((line = br.readLine()) != null) {
 
-                Toast.makeText(this, "Read line: "+line,Toast.LENGTH_SHORT).show();
+//                Toast.makeText(this, "Read line: "+line,Toast.LENGTH_SHORT).show();
                 Log.d(TAG,"Line: "+line);
 //                text.append(line);
 //                text.append('\n');
@@ -274,6 +291,17 @@ public class MainActivity extends AppCompatActivity {
             fos.close();
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    void getUpdates(String chatName, String chatID){
+        ArrayList<Bitmap> images = new ArrayList<>();
+        ArrayList<String> imageNames = new ArrayList<>();
+
+        for(int i=0;i<imageNames.size();i++){
+            Bitmap b = images.get(i);
+            saveImageToChat(b,chatName+chatID,imageNames.get(i));
+            saveToInternalStorage(b,imageNames.get(i));
         }
     }
 
@@ -330,6 +358,25 @@ public class MainActivity extends AppCompatActivity {
 
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.main_menu,menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        switch(item.getItemId()){
+            case R.id.show_albums:
+                startActivity(new Intent(MainActivity.this, galleryAlbums.class));
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
@@ -370,7 +417,9 @@ public class MainActivity extends AppCompatActivity {
         gallery_fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(MainActivity.this, gallery.class));
+                Intent i = new Intent(MainActivity.this, galleryImages.class);
+                i.putExtra("file",MainActivity.this.getFilesDir());
+                startActivity(i);
             }
         });
 
@@ -381,73 +430,5 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-//        mListView = (ListView)findViewById(R.id.listView_chats);
-//        mListView2 = (ListView)findViewById(R.id.listView2);
 
-//        mListView.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, chats));
-
-
-
-//        mListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-//            @Override
-//            public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
-//
-//                PopupMenu popupGroup = new PopupMenu(MainActivity.this, view);
-////                MenuInflater inflater = popupGroup.getMenuInflater();
-////                inflater.inflate(R.menu.grp_action, popupGroup.getMenu());
-//                popupGroup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-//                    @Override
-//                    public boolean onMenuItemClick(MenuItem item) {
-//                        switch (item.getItemId()){
-//                            case R.id.profile_update1:
-//                                Toast.makeText(MainActivity.this, "profle update 1",Toast.LENGTH_SHORT).show();
-//                                break;
-//
-//                            case R.id.profile_update2:
-//                                Toast.makeText(MainActivity.this, "profle update 2",Toast.LENGTH_SHORT).show();
-//                                break;
-//
-//                            case R.id.profile_update3:
-//                                Toast.makeText(MainActivity.this, "profle update 3",Toast.LENGTH_SHORT).show();
-//                                break;
-//
-//                            case R.id.profile_update4:
-//                                Toast.makeText(MainActivity.this, "profle update 4",Toast.LENGTH_SHORT).show();
-//                                break;
-//                        }
-//                        return false;
-//                    }
-//                });
-//                popupGroup.inflate(R.menu.grp_action);
-//                popupGroup.show();
-//                return false;
-//            }
-//        });
-//        mListView2.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, data2));
-
-//        ListUtils.setDynamicHeight(mListView);
-//        ListUtils.setDynamicHeight(mListView2);
-    }
-
-
-//    public static class ListUtils {
-//        public static void setDynamicHeight(ListView mListView) {
-//            ListAdapter mListAdapter = mListView.getAdapter();
-//            if (mListAdapter == null) {
-//                // when adapter is null
-//                return;
-//            }
-//            int height = 0;
-//            int desiredWidth = View.MeasureSpec.makeMeasureSpec(mListView.getWidth(), View.MeasureSpec.UNSPECIFIED);
-//            for (int i = 0; i < mListAdapter.getCount(); i++) {
-//                View listItem = mListAdapter.getView(i, null, mListView);
-//                listItem.measure(desiredWidth, View.MeasureSpec.UNSPECIFIED);
-//                height += listItem.getMeasuredHeight();
-//            }
-//            ViewGroup.LayoutParams params = mListView.getLayoutParams();
-//            params.height = height + (mListView.getDividerHeight() * (mListAdapter.getCount() - 1));
-//            mListView.setLayoutParams(params);
-//            mListView.requestLayout();
-//        }
-//    }
 }

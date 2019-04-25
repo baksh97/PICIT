@@ -15,8 +15,11 @@ import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.w3c.dom.Text;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class main_rv_adapter_inactive extends RecyclerView.Adapter<main_rv_adapter_inactive.ViewHolder>{
 
@@ -46,6 +49,7 @@ public class main_rv_adapter_inactive extends RecyclerView.Adapter<main_rv_adapt
     @Override
     public void onBindViewHolder(@NonNull main_rv_adapter_inactive.ViewHolder holder, int position) {
         holder.chatName_tv.setText(chatNames.get(position));
+        holder.chatImage_tv.setText(String.valueOf(chatNames.get(position).charAt(0)).toUpperCase());
 //        holder.chatImage_iv.setImageBitmap(chatImages.get(position));
     }
 
@@ -59,13 +63,17 @@ public class main_rv_adapter_inactive extends RecyclerView.Adapter<main_rv_adapt
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener{
         ConstraintLayout completeLayout;
         TextView chatName_tv;
-        ImageView chatImage_iv;
+        TextView chatImage_tv;
 
         public ViewHolder(View itemView) {
             super(itemView);
 
-            chatImage_iv = (ImageView) itemView.findViewById(R.id.chat_image_iv);
+            chatImage_tv = (TextView) itemView.findViewById(R.id.chat_image_tv);
             chatName_tv = (TextView) itemView.findViewById(R.id.chat_name_tv);
+
+            int rand = new Random().nextInt(6);
+            chatImage_tv.setBackgroundResource(main_rv_adapter_active.backGrounds[rand]);
+
 
             itemView.setOnClickListener(this);
             itemView.setOnLongClickListener(this);

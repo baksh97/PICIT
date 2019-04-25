@@ -11,9 +11,12 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
+import android.widget.RadioButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -23,29 +26,52 @@ public class album_rv_adapter extends RecyclerView.Adapter<album_rv_adapter.View
 
 
     private static final String TAG = "main_rv_adapter";
-    //    private ArrayList<String> chatNames;
+    private ArrayList<String> imageNames;
     private ArrayList<Bitmap> galleryImages;
     private Context mContext;
 
+    ArrayList<Bitmap> selectedImages = create_album.selectedImages;
+    ArrayList<String> selectedNames = create_album.selectedNames;
 
-    public album_rv_adapter(ArrayList<Bitmap> galleryImages, Context mContext) {
+
+    public album_rv_adapter(ArrayList<String> imageNames,ArrayList<Bitmap> galleryImages, Context mContext) {
         this.galleryImages = galleryImages;
         this.mContext = mContext;
+        this.imageNames = imageNames;
     }
     @NonNull
     @Override
     public album_rv_adapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(mContext).inflate(R.layout.row_gallery,parent,false);
+        View view = LayoutInflater.from(mContext).inflate(R.layout.row_create_album,parent,false);
         album_rv_adapter.ViewHolder holder = new album_rv_adapter.ViewHolder(view);
         return holder;
     }
 
     @Override
-    public void onBindViewHolder(@NonNull album_rv_adapter.ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull album_rv_adapter.ViewHolder holder, int position1) {
 //        holder.chatName_tv.setText(chatNames.get(position));
 //        holder.chatImage_iv.setImageBitmap(chatImages.get(position));
 
 //        holder.
+        int position = 2*position1;
+        if(position < galleryImages.size()){
+            holder.albumImage_iv_1.setBackground(functions.bitmap2Drawable(galleryImages.get(position),mContext));
+            if(position+1 < galleryImages.size()){
+                holder.albumImage_iv_2.setBackground(functions.bitmap2Drawable(galleryImages.get(position+1),mContext));
+            }
+            else{
+                holder.albumImage_iv_2.setVisibility(View.INVISIBLE);
+                holder.r2.setVisibility(View.INVISIBLE);
+            }
+        }
+        else{
+            holder.albumImage_iv_1.setVisibility(View.INVISIBLE);
+            holder.r1.setVisibility(View.INVISIBLE);
+
+            holder.albumImage_iv_2.setVisibility(View.INVISIBLE);
+            holder.r2.setVisibility(View.INVISIBLE);
+        }
+
     }
 
     @Override
@@ -57,28 +83,80 @@ public class album_rv_adapter extends RecyclerView.Adapter<album_rv_adapter.View
 
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener{
         ConstraintLayout completeLayout;
-        ImageView galleryImage_iv_1,galleryImage_iv_2;
+        ImageView albumImage_iv_1,albumImage_iv_2;
+        RadioButton r1, r2;
 
         public ViewHolder(View itemView) {
             super(itemView);
 
-            galleryImage_iv_1 = (ImageView) itemView.findViewById(R.id.imageView_row_gallery_1);
-            galleryImage_iv_2 = (ImageView) itemView.findViewById(R.id.imageView_row_gallery_1);
+            r1 = (RadioButton) itemView.findViewById(R.id.radioButton_1);
+            r2 = (RadioButton) itemView.findViewById(R.id.radioButton_2);
 
-            galleryImage_iv_1.setOnClickListener(this);
-            galleryImage_iv_1.setOnLongClickListener(this);
+            albumImage_iv_1 = (ImageView) itemView.findViewById(R.id.imageView_album_1);
+            albumImage_iv_2 = (ImageView) itemView.findViewById(R.id.imageView_album_2);
 
-            galleryImage_iv_2.setOnClickListener(this);
-            galleryImage_iv_2.setOnLongClickListener(this);
+            albumImage_iv_1.setOnClickListener(this);
+            albumImage_iv_1.setOnLongClickListener(this);
+
+            albumImage_iv_2.setOnClickListener(this);
+            albumImage_iv_2.setOnLongClickListener(this);
+
+            r1.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    onClick(buttonView);
+                }
+            });
+
+            r2.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    onClick(buttonView);
+                }
+            });
 
         }
 
         @Override
         public void onClick(View v) {
-            int position = getAdapterPosition();
-            Intent intent = new Intent(mContext, fullImage.class);
-            intent.putExtra("image",position);
-            mContext.startActivity(intent);
+            int position = 2*getAdapterPosition();
+            switch (v.getId()){
+                case R.id.imageView_album_2:
+                    position++;
+                case R.id.imageView_album_1:
+                    Intent intent = new Intent(mContext, fullImage.class);
+                    intent.putExtra("image",galleryImages.get(position));
+                    mContext.startActivity(intent);
+                    break;
+                case R.id.radioButton_2:
+                    position++;
+//                    if(r2.)
+
+                    if(r2.isChecked()) {
+
+//                        Toast.makeText(mContext, "adding "+imageNames.get(position)+" to list", Toast.LENGTH_SHORT).show();
+
+                        selectedImages.add(galleryImages.get(position));
+                        selectedNames.add(imageNames.get(position));
+                    }
+                    else{
+                        selectedImages.remove(galleryImages.get(position));
+                        selectedNames.remove(imageNames.get(position));
+                    }
+                    break;
+                case R.id.radioButton_1:
+                    if(r1.isChecked()) {
+//                        Toast.makeText(mContext, "adding "+imageNames.get(position)+" to list", Toast.LENGTH_SHORT).show();
+                        selectedImages.add(galleryImages.get(position));
+                        selectedNames.add(imageNames.get(position));
+                    }
+                    else{
+                        selectedImages.remove(galleryImages.get(position));
+                        selectedNames.remove(imageNames.get(position));
+                    }
+                    break;
+            }
+
         }
 
         @Override

@@ -36,11 +36,13 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
-        <activity android:name=".gallery" />
+        <activity android:name=".galleryImages" />
         <activity android:name=".Chat" />
         <activity android:name=".Filters" />
         <activity android:name=".fullImage" />
-        <activity android:name=".create_album"></activity>
+        <activity android:name=".create_album" />
+        <activity android:name=".showAlbum" />
+        <activity android:name=".galleryAlbums"></activity>
     </application>
 
 </manifest>
