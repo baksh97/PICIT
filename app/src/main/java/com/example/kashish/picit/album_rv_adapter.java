@@ -18,6 +18,7 @@ import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 
 
@@ -119,14 +120,26 @@ public class album_rv_adapter extends RecyclerView.Adapter<album_rv_adapter.View
 
         @Override
         public void onClick(View v) {
+            Intent intent = new Intent(mContext, fullImage.class);
             int position = 2*getAdapterPosition();
             switch (v.getId()){
                 case R.id.imageView_album_2:
                     position++;
+//                    Intent intent = new Intent(mContext, fullImage.class);
+//                    intent.putExtra("image",galleryImages.get(position));
+//                    mContext.startActivity(intent);
+//                    break;
                 case R.id.imageView_album_1:
-                    Intent intent = new Intent(mContext, fullImage.class);
                     intent.putExtra("image",galleryImages.get(position));
+                    ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                    galleryImages.get(position).compress(Bitmap.CompressFormat.PNG, 100, stream);
+                    byte[] byteArray = stream.toByteArray();
+
+//            Intent in1 = new Intent(this, Activity2.class);
+//            in1.putExtra("image",byteArray);
+                    intent.putExtra("image",byteArray);
                     mContext.startActivity(intent);
+//                    mContext.startActivity(intent);
                     break;
                 case R.id.radioButton_2:
                     position++;

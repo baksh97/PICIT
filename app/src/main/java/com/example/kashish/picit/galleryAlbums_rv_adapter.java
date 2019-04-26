@@ -54,7 +54,7 @@ public class galleryAlbums_rv_adapter extends RecyclerView.Adapter<galleryAlbums
 
         if(galleryAlbums.size()>position){
             holder.galleryImage_iv_1.setImageResource(R.drawable.ic_folder_black_24dp);
-            holder.galleryImage_tv_1.setText(galleryAlbums.get(position).getName().substring(6));
+            holder.galleryImage_tv_1.setText(galleryAlbums.get(position).getName().substring(6).split("\t")[0]);
 //            holder.galleryImage_iv_1.setBackground(functions.bitmap2Drawable(galleryAlbums.get(position),mContext));
 //            holder.galleryImage_iv_1.setImageBitmap(galleryAlbums.get(position));
 //            holder.galleryImage_iv_1.setImageBitmap(galleryAlbums.get(position));
@@ -62,14 +62,14 @@ public class galleryAlbums_rv_adapter extends RecyclerView.Adapter<galleryAlbums
 //                holder.galleryImage_iv_2.setImageBitmap(galleryAlbums.get(position+1));
 //                holder.galleryImage_iv_2.setBackground(functions.bitmap2Drawable(galleryAlbums.get(position+1),mContext));
                 holder.galleryImage_iv_2.setImageResource(R.drawable.ic_folder_black_24dp);
-                holder.galleryImage_tv_2.setText(galleryAlbums.get(position+1).getName().substring(6));
+                holder.galleryImage_tv_2.setText(galleryAlbums.get(position+1).getName().substring(6).split("\t")[0]);
                 if(galleryAlbums.size()>position+2){
 //                    holder.galleryImage_iv_3.setImageBitmap(galleryAlbums.get(position+2));
 //                    Drawable d = functions.bitmap2Drawable(galleryAlbums.get(position+2),mContext);
 //                    holder.galleryImage_iv_3.setBackground(d);
 //                    holder.galleryImage_iv_3.setBackground(functions.bitmap2Drawable(galleryAlbums.get(position+2),mContext));
                     holder.galleryImage_iv_3.setImageResource(R.drawable.ic_folder_black_24dp);
-                    holder.galleryImage_tv_3.setText(galleryAlbums.get(position+2).getName().substring(6));
+                    holder.galleryImage_tv_3.setText(galleryAlbums.get(position+2).getName().substring(6).split("\t")[0]);
                 }
                 else{
                     holder.galleryImage_iv_3.setEnabled(false);
@@ -81,7 +81,7 @@ public class galleryAlbums_rv_adapter extends RecyclerView.Adapter<galleryAlbums
                 holder.galleryImage_iv_2.setEnabled(false);
                 holder.galleryImage_iv_3.setEnabled(false);
 
-                holder.galleryImage_tv_3.setVisibility(View.INVISIBLE);
+                holder.galleryImage_tv_2.setVisibility(View.INVISIBLE);
                 holder.galleryImage_tv_3.setVisibility(View.INVISIBLE);
             }
         }

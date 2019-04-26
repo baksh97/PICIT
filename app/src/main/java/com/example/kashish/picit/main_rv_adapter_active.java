@@ -26,12 +26,12 @@ public class main_rv_adapter_active extends RecyclerView.Adapter<main_rv_adapter
     private static final String TAG = "main_rv_adapter";
     private ArrayList<String> chatNames;
     private ArrayList<Bitmap> chatImages;
-    private ArrayList<String> chatIds;
+    private ArrayList<Integer> chatIds;
     private Context mContext;
 
     static int[] backGrounds = {R.drawable.main_circle_grp_blue_dark,R.drawable.main_circle_grp_green_dark,R.drawable.main_circle_grp_orange_dark,R.drawable.main_circle_grp_blue_light,R.drawable.main_circle_grp_green_light,R.drawable.main_circle_grp_orange_light};
 
-    public main_rv_adapter_active(ArrayList<String> items,ArrayList<String> chatIds,ArrayList<Bitmap> chatImages, Context mContext) {
+    public main_rv_adapter_active(ArrayList<String> items,ArrayList<Integer> chatIds,ArrayList<Bitmap> chatImages, Context mContext) {
         this.chatImages = chatImages;
         this.chatIds = chatIds;
         this.chatNames = items;
@@ -83,9 +83,10 @@ public class main_rv_adapter_active extends RecyclerView.Adapter<main_rv_adapter
         @Override
         public void onClick(View v) {
             int position = getAdapterPosition();
-            Chat.currentChatName = chatNames.get(position)+chatIds.get(position);
+//            Chat.currentChatName = chatNames.get(position)+chatIds.get(position);
             Intent intent = new Intent(mContext, Chat.class);
-            intent.putExtra("chatPos",position);
+            intent.putExtra("chatName",chatNames.get(position));
+            intent.putExtra("chatID",chatIds.get(position));
             mContext.startActivity(intent);
         }
 

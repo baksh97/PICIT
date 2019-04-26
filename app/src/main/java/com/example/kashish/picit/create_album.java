@@ -18,6 +18,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
 
+import static com.example.kashish.picit.MainActivity.Uid;
+import static com.example.kashish.picit.functions.createAlbumServer;
+
 public class create_album extends AppCompatActivity {
 
     private static final String TAG = "create_album";
@@ -30,41 +33,55 @@ public class create_album extends AppCompatActivity {
     public static ArrayList<Bitmap> selectedImages = new ArrayList<>();
     public static ArrayList<String> selectedNames = new ArrayList<>();
 
+
+
     boolean createAlbum(ArrayList<String> names,ArrayList<Bitmap> selectedImages, String albumName){
-        File chatDirectory=new File(this.getFilesDir(),albumName);
 
-        for(String name: names){
-            Log.d(TAG,"name: "+name);
+        int albumID = createAlbumServer(albumName, Uid);
+
+        if(albumID==-1){
+            Toast.makeText(this, "Could not create Album on server!", Toast.LENGTH_SHORT).show();
+            return false;
         }
+        else {
 
-        Log.d(TAG,"Crateing album with "+names.size()+" images");
+            albumName += "\t"+String.valueOf(albumID);
+            File chatDirectory=new File(this.getFilesDir(),albumName);
 
-        if(!chatDirectory.exists()) {
-            chatDirectory.mkdir();
-            for(int i=0;i<names.size();i++) {
-                String name = names.get(i);
-                Bitmap bitmapImage = selectedImages.get(i);
-                File mypath = new File(chatDirectory, name);
-                FileOutputStream fos = null;
-                try {
-                    fos = new FileOutputStream(mypath);
-                    // Use the compress method on the BitMap object to write image to the OutputStream
-                    bitmapImage.compress(Bitmap.CompressFormat.PNG, 100, fos);
-                    fos.close();
-                    Toast.makeText(this, "Album created!", Toast.LENGTH_SHORT).show();
-                    return true;
-                } catch (Exception e) {
-                    Toast.makeText(this, "Could not make album!", Toast.LENGTH_SHORT).show();
-                    e.printStackTrace();
-                    return  false;
-                }
+            for (String name : names) {
+                Log.d(TAG, "name: " + name);
             }
 
-            return false;
-        }
-        else{
-            Toast.makeText(this, "Album with same name already exists!", Toast.LENGTH_SHORT).show();
-            return false;
+            Log.d(TAG, "Creating album with " + names.size() + " images");
+
+            if (!chatDirectory.exists()) {
+                chatDirectory.mkdir();
+                for (int i = 0; i < names.size(); i++) {
+                    String name = names.get(i);
+                    Bitmap bitmapImage = selectedImages.get(i);
+                    File mypath = new File(chatDirectory, name);
+                    FileOutputStream fos = null;
+                    try {
+                        fos = new FileOutputStream(mypath);
+                        // Use the compress method on the BitMap object to write image to the OutputStream
+                        bitmapImage.compress(Bitmap.CompressFormat.PNG, 100, fos);
+                        fos.close();
+                        Toast.makeText(this, "Album created!", Toast.LENGTH_SHORT).show();
+
+
+                        return true;
+                    } catch (Exception e) {
+                        Toast.makeText(this, "Could not make album!", Toast.LENGTH_SHORT).show();
+                        e.printStackTrace();
+                        return false;
+                    }
+                }
+
+                return false;
+            } else {
+                Toast.makeText(this, "Album with same name already exists!", Toast.LENGTH_SHORT).show();
+                return false;
+            }
         }
     }
 
@@ -115,6 +132,10 @@ public class create_album extends AppCompatActivity {
 
     }
 
+    int serverCreateAlbum(){
+        return 0;
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
@@ -139,10 +160,10 @@ public class create_album extends AppCompatActivity {
                     boolean b = createAlbum(selectedNames, selectedImages, "album_" + albumName_et.getText().toString());
                     if (b) {
 
-                        Intent intent = new Intent(create_album.this, galleryImages.class);
-                        intent.putExtra("file", create_album.this.getFilesDir());
-                        startActivity(intent);
-                        finish();
+//                        Intent intent = new Intent(create_album.this, galleryImages.class);
+//                        intent.putExtra("file", create_album.this.getFilesDir());
+//                        startActivity(intent);
+                        onBackPressed();
                     }
                 }
         }

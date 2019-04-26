@@ -6,9 +6,15 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Vector;
+
+import static com.example.kashish.picit.MainActivity.Uid;
+import static com.example.kashish.picit.functions.getsUserIdFromEmailId;
+import static com.example.kashish.picit.functions.severCreateGroup;
 
 public class addGrp extends AppCompatActivity {
 
@@ -32,17 +38,38 @@ public class addGrp extends AppCompatActivity {
         addGrp_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                boolean error = false;
                 Group g = new Group();
                 String text = grpName_til.getEditText().getText().toString();
                 String allmember = grpMembers_til.getEditText().getText().toString();
                 String [] members = allmember.split(",");
 
-                g.members = new ArrayList<>(Arrays.asList(members));
-                g.name = text;
-                g.id = allmember;
-                MainActivity.addGrp(g,addGrp.this);
-                startActivity(new Intent(addGrp.this, MainActivity.class));
-                finish();
+                Vector<Integer> memberIds = new Vector<>();
+                for(String m: members){
+                    int mId = getsUserIdFromEmailId(m);
+                    if(mId!=-1) {
+                        memberIds.add(mId);
+                    }
+                    else{
+                        error = true;
+                        Toast.makeText(addGrp.this, "Member id of "+m+" not found!", Toast.LENGTH_SHORT).show();
+                        break;
+                    }
+                }
+
+                int groupID = severCreateGroup(Uid, new Vector<Integer>(memberIds), text);
+                if(groupID==-1){
+                    Toast.makeText(addGrp.this, "Could not create group!", Toast.LENGTH_SHORT).show();
+                }
+                else if(!error){
+                    g.members = new ArrayList<>(Arrays.asList(members));
+                    g.name = text;
+                    g.id = groupID;
+
+                    MainActivity.addGrp(g,addGrp.this);
+                    startActivity(new Intent(addGrp.this, MainActivity.class));
+                    finish();
+                }
             }
         });
 

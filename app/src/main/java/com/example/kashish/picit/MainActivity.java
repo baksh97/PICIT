@@ -28,7 +28,14 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Vector;
 
+import static com.example.kashish.picit.functions.getGroupsOfUser;
+import static com.example.kashish.picit.functions.getPicturesInGroup;
+import static com.example.kashish.picit.functions.saveImageOnFirebaseStorage;
+//import static com.example.kashish.picit.functions.saveImageOnS3;
+import static com.example.kashish.picit.functions.sharePictureToGroup;
+import static com.example.kashish.picit.functions.uploadPicture;
 import static com.example.kashish.picit.takePic.REQUEST_CAMERA;
 
 public class MainActivity extends AppCompatActivity {
@@ -39,14 +46,12 @@ public class MainActivity extends AppCompatActivity {
     private FloatingActionButton camera_fab, gallery_fab,add_grp_fab;
     Intent cameraIntent;
 
-//    static String [] active ={"Hiren", "Pratik", "Dhruv", "Narendra", "Piyush", "Priyank"};
-//    static String [] inactive ={"Kirit", "Miral", "Bhushan", "Jiten", "Ajay", "Kamlesh"};
-//
-//    static String [] activeIds ={"Hiren", "Pratik", "Dhruv", "Narendra", "Piyush", "Priyank"};
-//    static String [] inactiveIds ={"Kirit", "Miral", "Bhushan", "Jiten", "Ajay", "Kamlesh"};
-//    private
+    public static int Uid;
+
+    static Context context;
+
     static ArrayList<String> active_chats,inactive_chats;
-    static ArrayList<String> active_chat_ids,inactive_chat_ids;
+    static ArrayList<Integer> active_chat_ids,inactive_chat_ids;
 
     static main_rv_adapter_active active_adapter;
     static main_rv_adapter_inactive inactive_adapter;
@@ -140,7 +145,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         String chatName = active_chats.remove(position);
-        String chatId = active_chat_ids.remove(position);
+        int chatId = active_chat_ids.remove(position);
 
         inactive_chats.add(0,chatName);
         inactive_chat_ids.add(0,chatId);
@@ -149,6 +154,14 @@ public class MainActivity extends AppCompatActivity {
         inactive_adapter.notifyDataSetChanged();
 //        context.startActivity(new Intent(context,MainActivity.class));
 
+        setGroupActive(Uid, active_chat_ids.get(position));
+    }
+
+    static void setGroupInactive(int uid, int gid){
+
+    }
+
+    static void setGroupActive(int uid, int gid){
 
     }
 
@@ -190,13 +203,15 @@ public class MainActivity extends AppCompatActivity {
             outputStream.close();
 
 
+            setGroupActive(Uid, inactive_chat_ids.get(position));
+
         } catch (java.io.IOException e) {
             e.printStackTrace();
         }
 
 //        context.startActivity(new Intent(context,MainActivity.class));
         String chatName = inactive_chats.remove(position);
-        String chatId = inactive_chat_ids.remove(position);
+        int chatId = inactive_chat_ids.remove(position);
 
         active_chats.add(0,chatName);
         active_chat_ids.add(0,chatId);
@@ -216,61 +231,86 @@ public class MainActivity extends AppCompatActivity {
         fileOrDirectory.delete();
     }
 
+//    void initChats(){
+//        active_chat_ids = new ArrayList<>();
+//        active_chats = new ArrayList<>();
+//        inactive_chat_ids = new ArrayList<>();
+//        inactive_chats = new ArrayList<>();
+////        active_chats = new ArrayList<>(Arrays.asList(active));
+////        inactive_chats = new ArrayList<>(Arrays.asList(inactive));
+////
+////        active_chat_ids = new ArrayList<>(Arrays.asList(activeIds));
+////        inactive_chat_ids = new ArrayList<>(Arrays.asList(inactiveIds));
+//
+//        try {
+//            for(File f: this.getFilesDir().listFiles()){
+//                Log.d(TAG,"file: "+f.getAbsolutePath());
+////                if(f.isDirectory()){
+////                    deleteRecursive(f);
+////                }
+////                if(f.getAbsolutePath().endsWith("/chats_picit")){
+////                    Log.d(TAG,"found file: "+f.getAbsolutePath());
+////                    f.delete();
+////                }
+//            }
+//
+////            File file = new File(this.getFilesDir(),"chats_picit");
+//            InputStream inputStream = this.openFileInput("chats_picit");
+//            BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
+//            String line;
+//
+//            while ((line = br.readLine()) != null) {
+//
+////                Toast.makeText(this, "Read line: "+line,Toast.LENGTH_SHORT).show();
+//                Log.d(TAG,"Line: "+line);
+////                text.append(line);
+////                text.append('\n');
+//                String[] parts = line.split("\t");
+//                for(String s: parts){
+//                    Log.d(TAG,"parts: "+s);
+//                }
+//                if(parts.length!=0) {
+//
+//                    Toast.makeText(this,"parts[2]: "+parts[2],Toast.LENGTH_SHORT).show();
+//                    Log.d(TAG,"parts[2]: "+parts[2]);
+//
+//                    if (parts[2].contains("inactive")) {
+//                        inactive_chats.add(0, parts[0]);
+//                        inactive_chat_ids.add(0, parts[1]);
+//                    } else{
+//                        active_chats.add(0, parts[0]);
+//                        active_chat_ids.add(0, parts[1]);
+//                    }
+//                }
+//            }
+//            br.close();
+//        } catch (java.io.IOException e) {
+//            e.printStackTrace();
+//        }
+//    }
+
+
     void initChats(){
         active_chat_ids = new ArrayList<>();
-        active_chats = new ArrayList<>();
         inactive_chat_ids = new ArrayList<>();
+        active_chats = new ArrayList<>();
         inactive_chats = new ArrayList<>();
-//        active_chats = new ArrayList<>(Arrays.asList(active));
-//        inactive_chats = new ArrayList<>(Arrays.asList(inactive));
-//
-//        active_chat_ids = new ArrayList<>(Arrays.asList(activeIds));
-//        inactive_chat_ids = new ArrayList<>(Arrays.asList(inactiveIds));
-
-        try {
-            for(File f: this.getFilesDir().listFiles()){
-                Log.d(TAG,"file: "+f.getAbsolutePath());
-//                if(f.isDirectory()){
-//                    deleteRecursive(f);
-//                }
-//                if(f.getAbsolutePath().endsWith("/chats_picit")){
-//                    Log.d(TAG,"found file: "+f.getAbsolutePath());
-//                    f.delete();
-//                }
-            }
-
-//            File file = new File(this.getFilesDir(),"chats_picit");
-            InputStream inputStream = this.openFileInput("chats_picit");
-            BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
-            String line;
-
-            while ((line = br.readLine()) != null) {
-
-//                Toast.makeText(this, "Read line: "+line,Toast.LENGTH_SHORT).show();
-                Log.d(TAG,"Line: "+line);
-//                text.append(line);
-//                text.append('\n');
-                String[] parts = line.split("\t");
-                for(String s: parts){
-                    Log.d(TAG,"parts: "+s);
-                }
-                if(parts.length!=0) {
-
-                    Toast.makeText(this,"parts[2]: "+parts[2],Toast.LENGTH_SHORT).show();
-                    Log.d(TAG,"parts[2]: "+parts[2]);
-
-                    if (parts[2].contains("inactive")) {
-                        inactive_chats.add(0, parts[0]);
-                        inactive_chat_ids.add(0, parts[1]);
-                    } else{
-                        active_chats.add(0, parts[0]);
-                        active_chat_ids.add(0, parts[1]);
-                    }
+        Vector<String> v = getGroupsOfUser(Uid);
+        if(v!=null) {
+            for (String s : v) {
+                String[] parts = s.split(",");
+                int active = Integer.parseInt(parts[2]);
+                if (active == 1) {
+                    active_chats.add(parts[1]);
+                    active_chat_ids.add(Integer.parseInt(parts[0]));
+                } else {
+                    inactive_chats.add(parts[1]);
+                    inactive_chat_ids.add(Integer.parseInt(parts[0]));
                 }
             }
-            br.close();
-        } catch (java.io.IOException e) {
-            e.printStackTrace();
+        }
+        else{
+            Toast.makeText(context, "Could not load groups. Please reload!", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -294,16 +334,19 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    void getUpdates(String chatName, String chatID){
-        ArrayList<Bitmap> images = new ArrayList<>();
-        ArrayList<String> imageNames = new ArrayList<>();
+//    void getUpdates(String chatName, int chatID){
+//        Vector<String> images = getPicturesInGroup(chatID);
+//
+//        for(String s: images){
+//            String[] parts = s.split(",");
+//            String picid = parts[0];
+//
+//
+//            //TODO
+//        }
+//    }
 
-        for(int i=0;i<imageNames.size();i++){
-            Bitmap b = images.get(i);
-            saveImageToChat(b,chatName+chatID,imageNames.get(i));
-            saveToInternalStorage(b,imageNames.get(i));
-        }
-    }
+
 
     void initViews(){
         rv_main_active = (RecyclerView) findViewById(R.id.rv_main_active);
@@ -318,41 +361,39 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == REQUEST_CAMERA && resultCode == Activity.RESULT_OK)
         {
             Bitmap photo = (Bitmap) data.getExtras().get("data");
-//            captured_iv.setImageBitmap(photo);
-            SimpleDateFormat formatter = new SimpleDateFormat("ddMMyyyyHHmmss");
-            Date date = new Date();
-            String imageName = "Image"+ formatter.format(date) +".jpg";
-            String path = saveToInternalStorage(photo,imageName);
-            for(int i=0;i<active_chats.size();i++){
-                saveImageToChat(photo,active_chats.get(i)+active_chat_ids.get(i),imageName);
+
+            int id = uploadPicture(Uid);
+            if(id==-1){
+                Toast.makeText(context, "Could not upload picture!", Toast.LENGTH_SHORT).show();
             }
+            else{
+                String path = saveToInternalStorage(photo,String.valueOf(id)+".jpg");
+
+                saveImageOnFirebaseStorage(context,photo, id);              //storing on S3 to get
+                String imageName = String.valueOf(id);
+                for(int i=0;i<active_chats.size();i++){
+                    saveImageToChat(photo,active_chats.get(i)+active_chat_ids.get(i),imageName);
+                    sharePictureToGroup(id,Uid,active_chat_ids.get(i));
+                }
 //            Toast.makeText(takePic.this, "image stored at: "+path, Toast.LENGTH_SHORT).show();
-            startActivityForResult(cameraIntent, REQUEST_CAMERA);
+                startActivityForResult(cameraIntent, REQUEST_CAMERA);
+            }
+
         }
     }
 
-    private String saveToInternalStorage(Bitmap bitmapImage, String imageName){
-//        ContextWrapper cw = new ContextWrapper(getApplicationContext());
-        // path to /data/data/yourapp/app_data/imageDir
-//        SimpleDateFormat formatter = new SimpleDateFormat("ddMMyyyyHHmmss");
-//        Date date = new Date();
-        File mypath = new File(this.getFilesDir(), imageName);
-        // Create imageDir
-//        File mypath=new File(directory,"profile.jpg");
+    public static String saveToInternalStorage(Bitmap bitmapImage, String imageName){
+
+        File mypath = new File(context.getFilesDir(), imageName);
 
         FileOutputStream fos = null;
         try {
             fos = new FileOutputStream(mypath);
-            // Use the compress method on the BitMap object to write image to the OutputStream
             bitmapImage.compress(Bitmap.CompressFormat.PNG, 100, fos);
             fos.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
-//            try {
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
         return mypath.getAbsolutePath();
     }
 
@@ -371,6 +412,8 @@ public class MainActivity extends AppCompatActivity {
         switch(item.getItemId()){
             case R.id.show_albums:
                 startActivity(new Intent(MainActivity.this, galleryAlbums.class));
+            case R.id.refresh_main:
+                initChats();
         }
 
         return super.onOptionsItemSelected(item);
@@ -381,9 +424,9 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-//        chats = new ArrayList<>();
+        context = this;
 
-        if(active_chats==null){
+        if (active_chats == null) {
             initChats();
         }
 
@@ -392,18 +435,11 @@ public class MainActivity extends AppCompatActivity {
         rv_main_active.setLayoutManager(new LinearLayoutManager(this));
         rv_main_inactive.setLayoutManager(new LinearLayoutManager(this));
 
-        active_adapter = new main_rv_adapter_active(active_chats,active_chat_ids,null,this);
-        inactive_adapter = new main_rv_adapter_inactive(inactive_chats,inactive_chat_ids,null,this);
+        active_adapter = new main_rv_adapter_active(active_chats, active_chat_ids, null, this);
+        inactive_adapter = new main_rv_adapter_inactive(inactive_chats, inactive_chat_ids, null, this);
 
         rv_main_active.setAdapter(active_adapter);
         rv_main_inactive.setAdapter(inactive_adapter);
-
-//        camera_fab.setOnLongClickListener(new View.OnLongClickListener() {
-//            @Override
-//            public boolean onLongClick(View v) {
-//                return false;
-//            }
-//        });
 
         camera_fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -418,7 +454,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent i = new Intent(MainActivity.this, galleryImages.class);
-                i.putExtra("file",MainActivity.this.getFilesDir());
+                i.putExtra("file", MainActivity.this.getFilesDir());
                 startActivity(i);
             }
         });
@@ -429,6 +465,5 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(new Intent(MainActivity.this, addGrp.class));
             }
         });
-
-
+    }
 }

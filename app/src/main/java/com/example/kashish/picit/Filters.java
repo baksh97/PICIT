@@ -1,5 +1,6 @@
 package com.example.kashish.picit;
 
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -31,6 +32,10 @@ public class Filters extends AppCompatActivity {
     }
 
 
+    byte[] applyFilter(byte[] b, String filter){
+        return null;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -39,6 +44,8 @@ public class Filters extends AppCompatActivity {
         initViews();
         tempFilterNames();
 
+        final Intent intent = getIntent();
+
         ArrayAdapter<String> adapter = new ArrayAdapter<>(getApplicationContext(),  android.R.layout.simple_spinner_dropdown_item, filterNames);
         adapter.setDropDownViewResource( android.R.layout.simple_spinner_dropdown_item);
 
@@ -46,6 +53,11 @@ public class Filters extends AppCompatActivity {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 Toast.makeText(Filters.this, "Filter "+position+" applied",Toast.LENGTH_SHORT).show();
+
+                byte[] b = intent.getByteArrayExtra("image");
+                b = applyFilter(b, filterNames.get(position));
+
+
             }
 
             @Override

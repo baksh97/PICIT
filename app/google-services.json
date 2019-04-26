@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "336311866096",
+    "firebase_url": "https://picit-e677d.firebaseio.com",
+    "project_id": "picit-e677d",
+    "storage_bucket": "picit-e677d.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:336311866096:android:0d1c5b951e63910b",
+        "android_client_info": {
+          "package_name": "com.example.kashish.picit"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "336311866096-ndspe8sos1cn8jm9bq0f68al5n3abc8s.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCuUnnlzbocVoo-Qx_k9CF1BtlyP8zHwPk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "336311866096-ndspe8sos1cn8jm9bq0f68al5n3abc8s.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

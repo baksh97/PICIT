@@ -26,11 +26,11 @@ public class main_rv_adapter_inactive extends RecyclerView.Adapter<main_rv_adapt
     private static final String TAG = "main_rv_adapter";
     private ArrayList<String> chatNames;
     private ArrayList<Bitmap> chatImages;
-    ArrayList<String> chatIds;
+    ArrayList<Integer> chatIds;
     private Context mContext;
 
 
-    public main_rv_adapter_inactive(ArrayList<String> items,ArrayList<String> chatIds,ArrayList<Bitmap> chatImages, Context mContext) {
+    public main_rv_adapter_inactive(ArrayList<String> items,ArrayList<Integer> chatIds,ArrayList<Bitmap> chatImages, Context mContext) {
         this.chatImages = chatImages;
         this.chatIds = chatIds;
         this.chatNames = items;
@@ -82,9 +82,10 @@ public class main_rv_adapter_inactive extends RecyclerView.Adapter<main_rv_adapt
         @Override
         public void onClick(View v) {
             int position = getAdapterPosition();
-            Chat.currentChatName = chatNames.get(position) + chatIds.get(position);
+//            Chat.currentChatName = chatNames.get(position) + chatIds.get(position);
             Intent intent = new Intent(mContext, Chat.class);
-            intent.putExtra("chatPos",position);
+            intent.putExtra("chatName",chatNames.get(position));
+            intent.putExtra("chatID",chatIds.get(position));
             mContext.startActivity(intent);
         }
 
@@ -97,6 +98,7 @@ public class main_rv_adapter_inactive extends RecyclerView.Adapter<main_rv_adapt
                     switch (item.getItemId()){
                         case R.id.chat_activate:
 //                            Toast.makeText(mContext, "profle update 1",Toast.LENGTH_SHORT).show();
+//                            MainActivity m = new MainActivity();
                             MainActivity.inactive2active(getAdapterPosition(),mContext);
                             break;
 
