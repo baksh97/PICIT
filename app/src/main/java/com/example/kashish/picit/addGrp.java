@@ -14,7 +14,7 @@ import java.util.Vector;
 
 import static com.example.kashish.picit.MainActivity.Uid;
 import static com.example.kashish.picit.functions.getsUserIdFromEmailId;
-import static com.example.kashish.picit.functions.severCreateGroup;
+import static com.example.kashish.picit.functions.createGroup;
 
 public class addGrp extends AppCompatActivity {
 
@@ -45,6 +45,7 @@ public class addGrp extends AppCompatActivity {
                 String [] members = allmember.split(",");
 
                 Vector<Integer> memberIds = new Vector<>();
+                memberIds.add(Uid);
                 for(String m: members){
                     int mId = getsUserIdFromEmailId(m);
                     if(mId!=-1) {
@@ -57,7 +58,7 @@ public class addGrp extends AppCompatActivity {
                     }
                 }
 
-                int groupID = severCreateGroup(Uid, new Vector<Integer>(memberIds), text);
+                int groupID = createGroup(new Vector<Integer>(memberIds),Uid, text);
                 if(groupID==-1){
                     Toast.makeText(addGrp.this, "Could not create group!", Toast.LENGTH_SHORT).show();
                 }

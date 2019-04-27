@@ -161,14 +161,35 @@ public class galleryImages_rv_adapter extends RecyclerView.Adapter<galleryImages
         }
 
         @Override
-        public boolean onLongClick(View v) {
+        public boolean onLongClick(final View v) {
+
             PopupMenu popupGroup = new PopupMenu(mContext, v);
             popupGroup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                 @Override
                 public boolean onMenuItemClick(MenuItem item) {
                     switch (item.getItemId()){
                         case R.id.add_filters:
-                            mContext.startActivity(new Intent(mContext,Filters.class));
+                            int position = 3*getAdapterPosition();
+                            switch (v.getId()){
+                                case R.id.imageView_row_gallery_1:{
+//                    position
+                                    break;
+                                }
+                                case R.id.imageView_row_gallery_2:{
+                                    position += 1;
+                                    break;
+                                }
+                                case R.id.imageView_row_gallery_3:{
+                                    position += 2;
+                                    break;
+                                }
+                            }
+                            Intent intent = new Intent(mContext,Filters.class);
+                            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                            galleryImages.get(position).compress(Bitmap.CompressFormat.PNG, 100, stream);
+                            byte[] byteArray = stream.toByteArray();
+                            intent.putExtra("image",byteArray);
+                            mContext.startActivity(intent);
                             break;
                     }
                     return false;

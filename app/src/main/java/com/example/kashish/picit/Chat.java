@@ -11,11 +11,14 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Vector;
 
+import static com.example.kashish.picit.MainActivity.refreshingChat;
+//import static com.example.kashish.picit.functions.adapter;
 import static com.example.kashish.picit.functions.getPicturesInGroup;
 import static com.example.kashish.picit.functions.getUpdates;
 
@@ -25,7 +28,7 @@ public class Chat extends AppCompatActivity {
     ArrayList<Bitmap> images;
 //    ArrayList<>
     ArrayList<String> names;
-    ArrayList<File> folders;
+//    ArrayList<File> folders;
 
     Intent intent;
 
@@ -34,7 +37,7 @@ public class Chat extends AppCompatActivity {
 
     void displayImages(File file){
         images = new ArrayList<>();
-        folders = new ArrayList<>();
+//        folders = new ArrayList<>();
         names = new ArrayList<>();
 //        File file = this.getFilesDir();
         if(file.isDirectory()){
@@ -47,7 +50,7 @@ public class Chat extends AppCompatActivity {
                     names.add(fs.getName());
                 }
                 else{
-                    folders.add(fs);
+//                    folders.add(fs);
                 }
 //                fs.delete();
 //                holder.imageview.setImageBitmap(myBitmap);
@@ -70,15 +73,21 @@ public class Chat extends AppCompatActivity {
         switch(item.getItemId()){
             case R.id.add_member:
                 startActivity(new Intent(Chat.this, addMembers.class));
-
+                break;
             case R.id.refresh_chat:
+//                functions.adapter = adapter;
+                if(!refreshingChat)
                 getUpdates(Chat.this, currentChatName,chatID);
-                try {
-                    wait(1);
-                    startActivity(intent);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+                else Toast.makeText(this, "Already refreshing a chat! Please wait.", Toast.LENGTH_SHORT).show();
+//                try {
+//                    Thread.sleep(100);
+////                    wait(1);
+////                    startActivity(intent);
+//                    finish();
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                }
+                break;
 
 
 //                Vector<String> images = getPicturesInGroup(chatID);
@@ -100,16 +109,18 @@ public class Chat extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
 
-        File file = new File(this.getFilesDir(),currentChatName);
+        intent = getIntent();
+        chatID = intent.getIntExtra("chatID",0);
+        currentChatName = intent.getStringExtra("chatName");
+
+        File file = new File(this.getFilesDir(),currentChatName+chatID);
 
         displayImages(file);
 
         rv_chat = (RecyclerView) findViewById(R.id.rv_chat);
 
-        intent = getIntent();
 
-        chatID = intent.getIntExtra("chatID",0);
-        currentChatName = intent.getStringExtra("chatName");
+
 
         rv_chat.setLayoutManager(new LinearLayoutManager(this));
         galleryImages_rv_adapter adapter = new galleryImages_rv_adapter(names,images,this);

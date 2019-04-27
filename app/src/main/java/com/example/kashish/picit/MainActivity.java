@@ -30,11 +30,16 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.Vector;
 
+import static com.example.kashish.picit.functions.getEmailOfUser;
 import static com.example.kashish.picit.functions.getGroupsOfUser;
 import static com.example.kashish.picit.functions.getPicturesInGroup;
+import static com.example.kashish.picit.functions.getsUserIdFromEmailId;
 import static com.example.kashish.picit.functions.saveImageOnFirebaseStorage;
 //import static com.example.kashish.picit.functions.saveImageOnS3;
+import static com.example.kashish.picit.functions.setGroupActive;
+import static com.example.kashish.picit.functions.setGroupInactive;
 import static com.example.kashish.picit.functions.sharePictureToGroup;
+import static com.example.kashish.picit.functions.signout;
 import static com.example.kashish.picit.functions.uploadPicture;
 import static com.example.kashish.picit.takePic.REQUEST_CAMERA;
 
@@ -46,7 +51,9 @@ public class MainActivity extends AppCompatActivity {
     private FloatingActionButton camera_fab, gallery_fab,add_grp_fab;
     Intent cameraIntent;
 
-    public static int Uid;
+    public static int Uid = 0;
+
+    public static boolean refreshingChat = false;
 
     static Context context;
 
@@ -57,11 +64,6 @@ public class MainActivity extends AppCompatActivity {
     static main_rv_adapter_inactive inactive_adapter;
 
     static void addGrp(Group g, Context context){
-        active_chats.add(g.name);
-        active_chat_ids.add(g.id);
-
-        active_adapter.notifyDataSetChanged();
-
         try {
             String fileName = "chats_picit";
             File file = new File(context.getFilesDir(),fileName);
@@ -76,6 +78,11 @@ public class MainActivity extends AppCompatActivity {
 //            Toast.makeText(context,"chat stored in file: "+file.getAbsolutePath(),Toast.LENGTH_SHORT).show();
             outputStream.write((g.name+"\t"+g.id+"\tactive\n").getBytes());
             outputStream.close();
+
+            inactive_chats.add(g.name);
+            inactive_chat_ids.add(g.id);
+
+            inactive_adapter.notifyDataSetChanged();
 
             Log.d(TAG,"reading file");
             InputStream inputStream = context.openFileInput("chats_picit");
@@ -154,16 +161,16 @@ public class MainActivity extends AppCompatActivity {
         inactive_adapter.notifyDataSetChanged();
 //        context.startActivity(new Intent(context,MainActivity.class));
 
-        setGroupActive(Uid, active_chat_ids.get(position));
+        setGroupInactive(Uid, active_chat_ids.get(position));
     }
 
-    static void setGroupInactive(int uid, int gid){
-
-    }
-
-    static void setGroupActive(int uid, int gid){
-
-    }
+//    static void setGroupInactive(int uid, int gid){
+//
+//    }
+//
+//    static void setGroupActive(int uid, int gid){
+//
+//    }
 
     static void inactive2active(int position,Context context){
 
@@ -291,11 +298,27 @@ public class MainActivity extends AppCompatActivity {
 
 
     void initChats(){
-        active_chat_ids = new ArrayList<>();
-        inactive_chat_ids = new ArrayList<>();
-        active_chats = new ArrayList<>();
-        inactive_chats = new ArrayList<>();
+//        active_chat_ids = new ArrayList<>();
+//        inactive_chat_ids = new ArrayList<>();
+//        active_chats = new ArrayList<>();
+//        inactive_chats = new ArrayList<>();
+        active_chats.clear();
+        inactive_chats.clear();
+        active_chat_ids.clear();
+        inactive_chat_ids.clear();
         Vector<String> v = getGroupsOfUser(Uid);
+
+//        for(File f: this.getFilesDir().listFiles()){
+//                Log.d(TAG,"file: "+f.getAbsolutePath());
+////                if(f.isDirectory()){
+//                    deleteRecursive(f);
+////                }
+////                if(f.getAbsolutePath().endsWith("/chats_picit")){
+////                    Log.d(TAG,"found file: "+f.getAbsolutePath());
+////                    f.delete();
+////                }
+//            }
+
         if(v!=null) {
             for (String s : v) {
                 String[] parts = s.split(",");
@@ -303,9 +326,11 @@ public class MainActivity extends AppCompatActivity {
                 if (active == 1) {
                     active_chats.add(parts[1]);
                     active_chat_ids.add(Integer.parseInt(parts[0]));
+                    active_adapter.notifyDataSetChanged();
                 } else {
                     inactive_chats.add(parts[1]);
                     inactive_chat_ids.add(Integer.parseInt(parts[0]));
+                    inactive_adapter.notifyDataSetChanged();
                 }
             }
         }
@@ -412,8 +437,21 @@ public class MainActivity extends AppCompatActivity {
         switch(item.getItemId()){
             case R.id.show_albums:
                 startActivity(new Intent(MainActivity.this, galleryAlbums.class));
+                break;
             case R.id.refresh_main:
                 initChats();
+//                active_adapter.notifyDataSetChanged();
+//                inactive_adapter.notifyDataSetChanged();
+                break;
+            case R.id.signout_main:
+                signout();
+                startActivity(new Intent(MainActivity.this, Signup.class));
+                break;
+
+            case R.id.profile_main:
+//                signout();
+                startActivity(new Intent(MainActivity.this, profile.class));
+                break;
         }
 
         return super.onOptionsItemSelected(item);
@@ -422,48 +460,76 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+
+
 
         context = this;
 
-        if (active_chats == null) {
-            initChats();
+        Uid = getsUserIdFromEmailId(getEmailOfUser());
+
+        if(Uid == -1){
+            Toast.makeText(context, "Server not online.. Try again later!", Toast.LENGTH_SHORT).show();
         }
+        else{
+            setContentView(R.layout.activity_main);
+            initViews();
 
-        initViews();
+            active_chats = new ArrayList<>();
+            inactive_chats = new ArrayList<>();
 
-        rv_main_active.setLayoutManager(new LinearLayoutManager(this));
-        rv_main_inactive.setLayoutManager(new LinearLayoutManager(this));
+            active_chat_ids = new ArrayList<>();
+            inactive_chat_ids = new ArrayList<>();
 
-        active_adapter = new main_rv_adapter_active(active_chats, active_chat_ids, null, this);
-        inactive_adapter = new main_rv_adapter_inactive(inactive_chats, inactive_chat_ids, null, this);
+            active_adapter = new main_rv_adapter_active(active_chats, active_chat_ids, null, this);
+            inactive_adapter = new main_rv_adapter_inactive(inactive_chats, inactive_chat_ids, null, this);
 
-        rv_main_active.setAdapter(active_adapter);
-        rv_main_inactive.setAdapter(inactive_adapter);
+//            if (active_chats == null) {
+                initChats();
+//            }
 
-        camera_fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+
+
+
+
+            rv_main_active.setLayoutManager(new LinearLayoutManager(this));
+            rv_main_inactive.setLayoutManager(new LinearLayoutManager(this));
+
+
+            rv_main_active.setAdapter(active_adapter);
+            rv_main_inactive.setAdapter(inactive_adapter);
+
+            camera_fab.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
 //                startActivity(new Intent(MainActivity.this, takePic.class));
-                cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-                startActivityForResult(cameraIntent, REQUEST_CAMERA);
-            }
-        });
+                    cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
+                    startActivityForResult(cameraIntent, REQUEST_CAMERA);
+                }
+            });
 
-        gallery_fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent i = new Intent(MainActivity.this, galleryImages.class);
-                i.putExtra("file", MainActivity.this.getFilesDir());
-                startActivity(i);
-            }
-        });
+            gallery_fab.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent i = new Intent(MainActivity.this, galleryImages.class);
+                    i.putExtra("file", MainActivity.this.getFilesDir());
+                    startActivity(i);
+                }
+            });
 
-        add_grp_fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(MainActivity.this, addGrp.class));
-            }
-        });
+            add_grp_fab.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    startActivity(new Intent(MainActivity.this, addGrp.class));
+                }
+            });
+        }
+    }
+
+    public void onBackPressed(){
+        Intent a = new Intent(Intent.ACTION_MAIN);
+        a.addCategory(Intent.CATEGORY_HOME);
+        a.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(a);
+
     }
 }

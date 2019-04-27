@@ -7,6 +7,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.NonNull;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -20,15 +21,28 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
+import org.json.simple.*;
+import org.json.simple.parser.*;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
+import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Random;
 import java.util.Vector;
 
 public class functions {
+    private static final String TAG = "functions";
     static Bitmap b;
+//    static int count=0;
+//    static galleryImages_rv_adapter adapter;
+//    static File chatFile;
 
     static FirebaseAuth mAuth = FirebaseAuth.getInstance();
 
@@ -45,13 +59,14 @@ public class functions {
         }
     }
 
-    static Vector<String> getGroupsOfUser(int Uid){
-        return new Vector<>();
+    static void signout(){
+        mAuth.signOut();
     }
 
-    static int createAlbumServer(String albumName, int Uid){
-        return 1;
-    }
+
+//    static void getUpdatesLocal(Context context, String chatName, int chatID){
+//
+//    }
 
     static Drawable bitmap2Drawable(Bitmap b, Context context){
         Drawable d = new BitmapDrawable(context.getResources(), b);
@@ -59,11 +74,15 @@ public class functions {
     }
 
     static void getUpdates(Context context, String chatName, int chatID){
+//        MainActivity.refreshingChat = true;
+//        int count = 0;
+//        int total = 0;
         Vector<String> images = getPicturesInGroup(chatID);
 
         if(images==null){
             Toast.makeText(context, "Could not load images! Please try again later.", Toast.LENGTH_SHORT).show();
         }else{
+//            total = images.size();
             String chatFolder = chatName+String.valueOf(chatID);
 
             for(String s: images){
@@ -75,6 +94,10 @@ public class functions {
                 downloadImaeFromFirebaseStorage(context,chatFolder,picName);
             }
         }
+
+//        while(count<total){}
+//        MainActivity.refreshingChat = false;
+        return;
     }
 
     static void downloadImaeFromFirebaseStorage(final Context context, String chatFolder , final String imageName){
@@ -87,21 +110,38 @@ public class functions {
         }
         File mypath = new File(chatDirectory,imageName);
 
+        if(mypath.exists()){
+//            count++;
+//            Log.d(TAG, "count increased: "+count);
+            Toast.makeText(context, "File already exists: "+mypath.getName(), Toast.LENGTH_SHORT).show();
+        }
+        else {
 
-        islandRef.getFile(mypath).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
-            @Override
-            public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
-                // Local temp file has been created
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception exception) {
-                // Handle any errors
-                Toast.makeText(context, "Could not download image "+imageName, Toast.LENGTH_SHORT).show();
-            }
-        });
+            islandRef.getFile(mypath).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+                @Override
+                public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                    // Local temp file has been created
+//                    adapter.notifyDataSetChanged();
+//                    count++;
+//                    Log.d(TAG, "count increased: "+count);
+                }
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception exception) {
+                    // Handle any errors
+//                    count++;
+//                    Log.d(TAG, "count increased: "+count);
+                    Toast.makeText(context, "Could not download image " + imageName, Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
 
     }
+
+    static String getEmailOfUser(){
+        return mAuth.getCurrentUser().getEmail();
+    }
+
 
     static void saveImageOnFirebaseStorage(final Context context, Bitmap b, int id){
         String imageName = String.valueOf(id)+".jpg";
@@ -126,71 +166,1038 @@ public class functions {
         });
     }
 
-    static void signup(final Context context, String email , String password){
-        mAuth.createUserWithEmailAndPassword(email,password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-            @Override
-            public void onComplete(@NonNull Task<AuthResult> task) {
-                if(task.isSuccessful()){
-//                    Toast.makeText(context, "Registration sucessful", Toast.LENGTH_SHORT).show();
-                    context.startActivity(new Intent(context, MainActivity.class));
-                }
-                else{
-                    Toast.makeText(context, task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+//    static
 
-                }
-            }
-        });
-    }
-
-
-    static void createUser(String email, String userName){
-
-    }
-
-    static int uploadPicture(int Uid){
-        Random r = new Random();
-        return r.nextInt();
-//        return ;
-    }
-
-    static void sharePictureToGroup(int picid, int uid, int groupid){
-
-    }
-
-    static void signin(final Context context, String email , String password){
-        mAuth.signInWithEmailAndPassword(email,password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-            @Override
-            public void onComplete(@NonNull Task<AuthResult> task) {
-                if(task.isSuccessful()){
-//                    Toast.makeText(context, "Signin", Toast.LENGTH_SHORT).show();
-                    context.startActivity(new Intent(context, MainActivity.class));
-                }
-                else{
-                    Toast.makeText(context, task.getException().getMessage(), Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
-    }
-
-
-    static int severCreateGroup(int Uid, Vector<Integer> memberIds, String grpName){
-        Random r = new Random();
-        return r.nextInt();
+//    static boolean addPicturesToAlbum(Vector<Integer> picids, int albumID){
+//        return true;
+//    }
+//
+//    static int createUser(String email, String userName){
 //        return 0;
-    }
-
+//    }
+//
+//    static int uploadPicture(int Uid){
+//        Random r = new Random();
+//        return r.nextInt();
+////        return ;
+//    }
+//
+//    static void sharePictureToGroup(int picid, int uid, int groupid){
+//
+//    }
+//
+//    static int severCreateGroup(int Uid, Vector<Integer> memberIds, String grpName){
+//        Random r = new Random();
+//        return r.nextInt();
+////        return 0;
+//    }
+//
     static int getsUserIdFromEmailId(String m){
-        Random r = new Random();
-        return r.nextInt();
+        Vector<String> v = new Vector<>();
+        v.add(m);
+        Vector<Integer> uids = getUseridsFromEmailids(v);
+//        Random r = new Random();
+//        return r.nextInt();
 //        return 0;
+        if(uids.size()==0){
+            return -1;
+        }
+        return uids.get(0);
     }
+//
+//    static void addUserToGroup(int Uid, int chatID, boolean isActive){
+//
+//    }
+//
+//    static Vector<String> getPicturesInGroup(int gid){
+//        return null;
+//    }
+//
+//    static Vector<String> getGroupsOfUser(int Uid){
+//        return new Vector<>();
+//    }
+//
+//    static int createAlbumServer(String albumName, int Uid){
+//        return 1;
+//    }
 
-    static void addUserToGroup(int Uid, int chatID, boolean isActive){
+    private static final String serverName = "52.90.143.1";
+    // private static final String serverName = "localhost";
+    private static final int port = 8500;
 
-    }
 
-    static Vector<String> getPicturesInGroup(int gid){
+
+    public static byte[] applyFilter(byte[] imageByteArray, String filterCode) {
+
+        try {
+            System.out.println("Connecting to " + serverName + " on port " + port);
+            Socket client = new Socket(serverName, port);
+
+            System.out.println("Just connected to " + client.getRemoteSocketAddress());
+
+            // ObjectInputStream ois = new ObjectInputStream(client.getInputStream());
+
+            ObjectOutputStream oos = new ObjectOutputStream(client.getOutputStream());
+            oos.flush();
+            System.out.println("Done making ois and oos");
+            // OutputStream outToServer = client.getOutputStream();
+            // ObjectOutputStream out = new ObjectOutputStream(outToServer);
+
+            // ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            // ImageIO.write( image, "jpg", baos );
+            // baos.flush();
+            // byte[] imageInByte = baos.toByteArray();
+            // baos.close();
+            String imageDataString = Base64.getEncoder().encodeToString(imageByteArray);
+
+            JSONObject obj = new JSONObject();
+            obj.put("Function","applyFilter");
+            obj.put("image",imageDataString);
+            obj.put("filterCode",filterCode);
+
+
+            String objstr = obj.toString();
+            System.out.println(objstr);
+            // JSONObject newobj = new JSONObject(objstr);
+
+
+            JSONParser parser = new JSONParser();
+            // JSONObject json = (JSONObject) parser.parse(objstr);
+            // System.out.println(json.get("Function"));
+
+            // String ret_imageDataString = (String)json.get("image");
+            // byte[] ret_imageByteArray = Base64.getDecoder().decode(ret_imageDataString);
+            // return ret_imageByteArray;
+
+            // outputStream.write(objstr);
+            // outputStream.flush()
+            oos.flush();
+            System.out.println("next line I write");
+            oos.writeObject(objstr);
+
+            oos.flush();
+            // oos.reset();
+            // oos.close();
+            System.out.println("sent to server, awaiting response");
+            // InputStream inFromServer = client.getInputStream();
+            // ObjectInputStream in = new ObjectInputStream(inFromServer);
+
+            ObjectInputStream ois = new ObjectInputStream(client.getInputStream());
+
+            System.out.println("done talking to server");
+            String objrecvd = (String)ois.readObject();
+            // ois.close();
+            System.out.println("Server says \n" + objrecvd);
+            JSONObject jsonrecvd = (JSONObject) parser.parse(objrecvd);
+            System.out.println(jsonrecvd.get("answer"));
+            client.close();
+            String answer = (String)jsonrecvd.get("answer");
+            byte[] ret_imageByteArray = Base64.getDecoder().decode(answer);
+            return ret_imageByteArray;
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return null;
+    }
+
+    public static int createUser(String emailId, String userName) {
+
+        try {
+            System.out.println("Connecting to " + serverName + " on port " + port);
+            Socket client = new Socket(serverName, port);
+
+            System.out.println("Just connected to " + client.getRemoteSocketAddress());
+
+
+            OutputStream outToServer = client.getOutputStream();
+            ObjectOutputStream out = new ObjectOutputStream(outToServer);
+
+
+            JSONObject obj = new JSONObject();
+            obj.put("Function","createUser");
+            obj.put("emailId",emailId);
+            obj.put("userName",userName);
+
+            String objstr = obj.toString();
+            System.out.println(objstr);
+            // JSONObject newobj = new JSONObject(objstr);
+
+
+            JSONParser parser = new JSONParser();
+            JSONObject json = (JSONObject) parser.parse(objstr);
+            System.out.println(json.get("Function"));
+
+
+
+            out.writeObject(objstr);
+
+            System.out.println("sent to server, awaiting response");
+            InputStream inFromServer = client.getInputStream();
+            ObjectInputStream in = new ObjectInputStream(inFromServer);
+            System.out.println("done talking to server");
+            String objrecvd = (String)in.readObject();
+            System.out.println("Server says \n" + objrecvd);
+            JSONObject jsonrecvd = (JSONObject) parser.parse(objrecvd);
+            System.out.println(jsonrecvd.get("answer"));
+
+            int answer = (int)(long)jsonrecvd.get("answer");
+
+            client.close();
+            return answer;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+    public static Vector<Integer> getUseridsFromEmailids(Vector<String> emailIds)
+    {
+        try {
+            System.out.println("Connecting to " + serverName + " on port " + port);
+            Socket client = new Socket(serverName, port);
+
+            System.out.println("Just connected to " + client.getRemoteSocketAddress());
+
+
+            OutputStream outToServer = client.getOutputStream();
+            ObjectOutputStream out = new ObjectOutputStream(outToServer);
+
+
+            JSONObject obj = new JSONObject();
+            obj.put("Function","getUseridsFromEmailids");
+            JSONArray jsArray = new JSONArray();
+            for (int i = 0; i < emailIds.size(); i++) {
+                jsArray.add(emailIds.get(i));
+            }
+            obj.put("emailIds",jsArray);
+
+            String objstr = obj.toString();
+            System.out.println(objstr);
+            // JSONObject newobj = new JSONObject(objstr);
+
+
+            JSONParser parser = new JSONParser();
+            JSONObject json = (JSONObject) parser.parse(objstr);
+            // JSONArray jarray = (JSONArray)json.get("userIds");
+            // if(jarray!=null)System.out.println("yaaay, it is not null");
+            // else System.out.println("booo! it is null");
+
+            // int n = jarray.size();
+            // System.out.println(n);
+
+
+            // int[] usid = new int[n];
+            // for(int i=0;i<n;i++)
+            // {
+            //    usid[i] = (int)(long)jarray.get(i);
+            // }
+            // System.out.println(usid[2]);
+
+
+            out.writeObject(objstr);
+
+            System.out.println("sent to server, awaiting response");
+            InputStream inFromServer = client.getInputStream();
+            ObjectInputStream in = new ObjectInputStream(inFromServer);
+            System.out.println("done talking to server");
+            String objrecvd = (String)in.readObject();
+            System.out.println("Server says \n" + objrecvd);
+            JSONObject jsonrecvd = (JSONObject) parser.parse(objrecvd);
+            System.out.println(jsonrecvd.get("answer"));
+
+            JSONArray jarray = (JSONArray)jsonrecvd.get("answer");
+            if(jarray==null)System.out.println("its a null");
+            Vector<Integer> answer = new Vector<Integer>();
+            for(int i=0;i<jarray.size();i++)
+            {
+                answer.add(new Integer((int)(long)jarray.get(i)));
+            }
+
+            client.close();
+            return answer;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return (new Vector<Integer>());
+    }
+
+    public static int createGroup(Vector<Integer> userIds, int creatorUserId, String groupName)
+
+    {
+        try {
+            System.out.println("Connecting to " + serverName + " on port " + port);
+            Socket client = new Socket(serverName, port);
+
+            System.out.println("Just connected to " + client.getRemoteSocketAddress());
+
+
+            OutputStream outToServer = client.getOutputStream();
+            ObjectOutputStream out = new ObjectOutputStream(outToServer);
+
+
+            JSONObject obj = new JSONObject();
+            obj.put("Function","createGroup");
+            JSONArray jsArray = new JSONArray();
+            for (int i = 0; i < userIds.size(); i++) {
+                jsArray.add(userIds.get(i));
+            }
+            obj.put("userIds",jsArray);
+            obj.put("creatorUserId",creatorUserId);
+            obj.put("groupName",groupName);
+
+            String objstr = obj.toString();
+            System.out.println(objstr);
+            // JSONObject newobj = new JSONObject(objstr);
+
+
+            JSONParser parser = new JSONParser();
+            JSONObject json = (JSONObject) parser.parse(objstr);
+            JSONArray jarray = (JSONArray)json.get("userIds");
+            // if(jarray!=null)System.out.println("yaaay, it is not null");
+            // else System.out.println("booo! it is null");
+
+            // int n = jarray.size();
+            // System.out.println(n);
+
+
+            // int[] usid = new int[n];
+            // for(int i=0;i<n;i++)
+            // {
+            // 	usid[i] = (int)(long)jarray.get(i);
+            // }
+            // System.out.println(usid[2]);
+
+
+            out.writeObject(objstr);
+
+            System.out.println("sent to server, awaiting response");
+            InputStream inFromServer = client.getInputStream();
+            ObjectInputStream in = new ObjectInputStream(inFromServer);
+            System.out.println("done talking to server");
+            String objrecvd = (String)in.readObject();
+            System.out.println("Server says \n" + objrecvd);
+            JSONObject jsonrecvd = (JSONObject) parser.parse(objrecvd);
+            System.out.println(jsonrecvd.get("answer"));
+
+            int answer = (int)(long)jsonrecvd.get("answer");
+            client.close();
+            return answer;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    public static boolean addUserToGroup(int userId, int groupId, boolean isActive) {
+
+        try {
+            System.out.println("Connecting to " + serverName + " on port " + port);
+            Socket client = new Socket(serverName, port);
+
+            System.out.println("Just connected to " + client.getRemoteSocketAddress());
+
+
+            OutputStream outToServer = client.getOutputStream();
+            ObjectOutputStream out = new ObjectOutputStream(outToServer);
+
+
+            JSONObject obj = new JSONObject();
+            obj.put("Function","addUserToGroup");
+            obj.put("userId",userId);
+            obj.put("groupId",groupId);
+            obj.put("isActive",isActive);
+
+            String objstr = obj.toString();
+            System.out.println(objstr);
+            // JSONObject newobj = new JSONObject(objstr);
+
+
+            JSONParser parser = new JSONParser();
+            JSONObject json = (JSONObject) parser.parse(objstr);
+            System.out.println(json.get("Function"));
+
+
+
+            out.writeObject(objstr);
+
+            System.out.println("sent to server, awaiting response");
+            InputStream inFromServer = client.getInputStream();
+            ObjectInputStream in = new ObjectInputStream(inFromServer);
+            System.out.println("done talking to server");
+            String objrecvd = (String)in.readObject();
+            System.out.println("Server says \n" + objrecvd);
+            JSONObject jsonrecvd = (JSONObject) parser.parse(objrecvd);
+            System.out.println(jsonrecvd.get("answer"));
+
+            boolean answer = (boolean)jsonrecvd.get("answer");
+
+            client.close();
+            return answer;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public static boolean removeUserFromGroup(int userId, int groupId) {
+
+        try {
+            System.out.println("Connecting to " + serverName + " on port " + port);
+            Socket client = new Socket(serverName, port);
+
+            System.out.println("Just connected to " + client.getRemoteSocketAddress());
+
+
+            OutputStream outToServer = client.getOutputStream();
+            ObjectOutputStream out = new ObjectOutputStream(outToServer);
+
+
+            JSONObject obj = new JSONObject();
+            obj.put("Function","removeUserFromGroup");
+            obj.put("userId",userId);
+            obj.put("groupId",groupId);
+
+            String objstr = obj.toString();
+            System.out.println(objstr);
+            // JSONObject newobj = new JSONObject(objstr);
+
+
+            JSONParser parser = new JSONParser();
+            JSONObject json = (JSONObject) parser.parse(objstr);
+            System.out.println(json.get("Function"));
+
+
+
+            out.writeObject(objstr);
+
+            System.out.println("sent to server, awaiting response");
+            InputStream inFromServer = client.getInputStream();
+            ObjectInputStream in = new ObjectInputStream(inFromServer);
+            System.out.println("done talking to server");
+            String objrecvd = (String)in.readObject();
+            System.out.println("Server says \n" + objrecvd);
+            JSONObject jsonrecvd = (JSONObject) parser.parse(objrecvd);
+            System.out.println(jsonrecvd.get("answer"));
+
+            boolean answer = (boolean)jsonrecvd.get("answer");
+
+            client.close();
+            return answer;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+    public static boolean setGroupActive(int userId, int groupId) {
+
+        try {
+            System.out.println("Connecting to " + serverName + " on port " + port);
+            Socket client = new Socket(serverName, port);
+
+            System.out.println("Just connected to " + client.getRemoteSocketAddress());
+
+
+            OutputStream outToServer = client.getOutputStream();
+            ObjectOutputStream out = new ObjectOutputStream(outToServer);
+
+
+            JSONObject obj = new JSONObject();
+            obj.put("Function","setGroupActive");
+            obj.put("userId",userId);
+            obj.put("groupId",groupId);
+
+            String objstr = obj.toString();
+            System.out.println(objstr);
+            // JSONObject newobj = new JSONObject(objstr);
+
+
+            JSONParser parser = new JSONParser();
+            JSONObject json = (JSONObject) parser.parse(objstr);
+            System.out.println(json.get("Function"));
+
+
+
+            out.writeObject(objstr);
+
+            System.out.println("sent to server, awaiting response");
+            InputStream inFromServer = client.getInputStream();
+            ObjectInputStream in = new ObjectInputStream(inFromServer);
+            System.out.println("done talking to server");
+            String objrecvd = (String)in.readObject();
+            System.out.println("Server says \n" + objrecvd);
+            JSONObject jsonrecvd = (JSONObject) parser.parse(objrecvd);
+            System.out.println(jsonrecvd.get("answer"));
+
+            boolean answer = (boolean)jsonrecvd.get("answer");
+
+            client.close();
+            return answer;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public static boolean setGroupInactive(int userId, int groupId) {
+
+        try {
+            System.out.println("Connecting to " + serverName + " on port " + port);
+            Socket client = new Socket(serverName, port);
+
+            System.out.println("Just connected to " + client.getRemoteSocketAddress());
+
+
+            OutputStream outToServer = client.getOutputStream();
+            ObjectOutputStream out = new ObjectOutputStream(outToServer);
+
+
+            JSONObject obj = new JSONObject();
+            obj.put("Function","setGroupInactive");
+            obj.put("userId",userId);
+            obj.put("groupId",groupId);
+
+            String objstr = obj.toString();
+            System.out.println(objstr);
+            // JSONObject newobj = new JSONObject(objstr);
+
+
+            JSONParser parser = new JSONParser();
+            JSONObject json = (JSONObject) parser.parse(objstr);
+            System.out.println(json.get("Function"));
+
+
+
+            out.writeObject(objstr);
+
+            System.out.println("sent to server, awaiting response");
+            InputStream inFromServer = client.getInputStream();
+            ObjectInputStream in = new ObjectInputStream(inFromServer);
+            System.out.println("done talking to server");
+            String objrecvd = (String)in.readObject();
+            System.out.println("Server says \n" + objrecvd);
+            JSONObject jsonrecvd = (JSONObject) parser.parse(objrecvd);
+            System.out.println(jsonrecvd.get("answer"));
+
+            boolean answer = (boolean)jsonrecvd.get("answer");
+
+            client.close();
+            return answer;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public static Vector<String> getGroupsOfUser(int userId) {
+
+        try {
+            System.out.println("Connecting to " + serverName + " on port " + port);
+            Socket client = new Socket(serverName, port);
+
+            System.out.println("Just connected to " + client.getRemoteSocketAddress());
+
+
+            OutputStream outToServer = client.getOutputStream();
+            ObjectOutputStream out = new ObjectOutputStream(outToServer);
+
+
+            JSONObject obj = new JSONObject();
+            obj.put("Function","getGroupsOfUser");
+            obj.put("userId",userId);
+
+            String objstr = obj.toString();
+            System.out.println(objstr);
+            // JSONObject newobj = new JSONObject(objstr);
+
+
+            JSONParser parser = new JSONParser();
+            JSONObject json = (JSONObject) parser.parse(objstr);
+            System.out.println(json.get("Function"));
+
+
+
+            out.writeObject(objstr);
+
+            System.out.println("sent to server, awaiting response");
+            InputStream inFromServer = client.getInputStream();
+            ObjectInputStream in = new ObjectInputStream(inFromServer);
+            System.out.println("done talking to server");
+            String objrecvd = (String)in.readObject();
+            System.out.println("Server says \n" + objrecvd);
+            JSONObject jsonrecvd = (JSONObject) parser.parse(objrecvd);
+            System.out.println(jsonrecvd.get("answer"));
+            JSONArray jarray = (JSONArray)jsonrecvd.get("answer");
+            if(jarray==null)System.out.println("its a null");
+            Vector<String> answer = new Vector<String>();
+            for(int i=0;i<jarray.size();i++)
+            {
+                answer.add((String)jarray.get(i));
+            }
+
+            // boolean answer = (boolean)jsonrecvd.get("answer");
+
+            client.close();
+            return answer;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return (new Vector<String>());
+    }
+
+
+    public static int uploadPicture(int userId) {
+
+        try {
+            System.out.println("Connecting to " + serverName + " on port " + port);
+            Socket client = new Socket(serverName, port);
+
+            System.out.println("Just connected to " + client.getRemoteSocketAddress());
+
+
+            OutputStream outToServer = client.getOutputStream();
+            ObjectOutputStream out = new ObjectOutputStream(outToServer);
+
+
+            JSONObject obj = new JSONObject();
+            obj.put("Function","uploadPicture");
+            obj.put("userId",userId);
+
+            String objstr = obj.toString();
+            System.out.println(objstr);
+            // JSONObject newobj = new JSONObject(objstr);
+
+
+            JSONParser parser = new JSONParser();
+            JSONObject json = (JSONObject) parser.parse(objstr);
+            System.out.println(json.get("Function"));
+
+
+
+            out.writeObject(objstr);
+
+            System.out.println("sent to server, awaiting response");
+            InputStream inFromServer = client.getInputStream();
+            ObjectInputStream in = new ObjectInputStream(inFromServer);
+            System.out.println("done talking to server");
+            String objrecvd = (String)in.readObject();
+            System.out.println("Server says \n" + objrecvd);
+            JSONObject jsonrecvd = (JSONObject) parser.parse(objrecvd);
+            System.out.println(jsonrecvd.get("answer"));
+
+            int answer = (int)(long)jsonrecvd.get("answer");
+
+            client.close();
+            return answer;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    public static boolean sharePictureToGroup(int picId, int userId, int groupId) {
+
+        try {
+            System.out.println("Connecting to " + serverName + " on port " + port);
+            Socket client = new Socket(serverName, port);
+
+            System.out.println("Just connected to " + client.getRemoteSocketAddress());
+
+
+            OutputStream outToServer = client.getOutputStream();
+            ObjectOutputStream out = new ObjectOutputStream(outToServer);
+
+
+            JSONObject obj = new JSONObject();
+            obj.put("Function","sharePictureToGroup");
+            obj.put("picId",picId);
+            obj.put("userId",userId);
+            obj.put("groupId",groupId);
+
+            String objstr = obj.toString();
+            System.out.println(objstr);
+            // JSONObject newobj = new JSONObject(objstr);
+
+
+            JSONParser parser = new JSONParser();
+            JSONObject json = (JSONObject) parser.parse(objstr);
+            System.out.println(json.get("Function"));
+
+
+
+            out.writeObject(objstr);
+
+            System.out.println("sent to server, awaiting response");
+            InputStream inFromServer = client.getInputStream();
+            ObjectInputStream in = new ObjectInputStream(inFromServer);
+            System.out.println("done talking to server");
+            String objrecvd = (String)in.readObject();
+            System.out.println("Server says \n" + objrecvd);
+            JSONObject jsonrecvd = (JSONObject) parser.parse(objrecvd);
+            System.out.println(jsonrecvd.get("answer"));
+
+            boolean answer = (boolean)jsonrecvd.get("answer");
+
+            client.close();
+            return answer;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public static Vector<String> getPicturesInGroup(int groupId) {
+
+        try {
+            System.out.println("Connecting to " + serverName + " on port " + port);
+            Socket client = new Socket(serverName, port);
+
+            System.out.println("Just connected to " + client.getRemoteSocketAddress());
+
+
+            OutputStream outToServer = client.getOutputStream();
+            ObjectOutputStream out = new ObjectOutputStream(outToServer);
+
+
+            JSONObject obj = new JSONObject();
+            obj.put("Function","getPicturesInGroup");
+            obj.put("groupId",groupId);
+
+            String objstr = obj.toString();
+            System.out.println(objstr);
+            // JSONObject newobj = new JSONObject(objstr);
+
+
+            JSONParser parser = new JSONParser();
+            JSONObject json = (JSONObject) parser.parse(objstr);
+            System.out.println(json.get("Function"));
+
+
+
+            out.writeObject(objstr);
+
+            System.out.println("sent to server, awaiting response");
+            InputStream inFromServer = client.getInputStream();
+            ObjectInputStream in = new ObjectInputStream(inFromServer);
+            System.out.println("done talking to server");
+            String objrecvd = (String)in.readObject();
+            System.out.println("Server says \n" + objrecvd);
+            JSONObject jsonrecvd = (JSONObject) parser.parse(objrecvd);
+            System.out.println(jsonrecvd.get("answer"));
+            JSONArray jarray = (JSONArray)jsonrecvd.get("answer");
+            Vector<String> answer = new Vector<String>();
+            for(int i=0;i<jarray.size();i++)
+            {
+                answer.add((String)jarray.get(i));
+            }
+
+            // boolean answer = (boolean)jsonrecvd.get("answer");
+
+            client.close();
+            return answer;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return (new Vector<String>());
+    }
+
+    public static int createAlbumServer(String albumName, int userId) {
+
+        try {
+            System.out.println("Connecting to " + serverName + " on port " + port);
+            Socket client = new Socket(serverName, port);
+
+            System.out.println("Just connected to " + client.getRemoteSocketAddress());
+
+
+            OutputStream outToServer = client.getOutputStream();
+            ObjectOutputStream out = new ObjectOutputStream(outToServer);
+
+
+            JSONObject obj = new JSONObject();
+            obj.put("Function","createAlbumServer");
+            obj.put("albumName",albumName);
+            obj.put("userId",userId);
+
+            String objstr = obj.toString();
+            System.out.println(objstr);
+            // JSONObject newobj = new JSONObject(objstr);
+
+
+            JSONParser parser = new JSONParser();
+            JSONObject json = (JSONObject) parser.parse(objstr);
+            System.out.println(json.get("Function"));
+
+
+
+            out.writeObject(objstr);
+
+            System.out.println("sent to server, awaiting response");
+            InputStream inFromServer = client.getInputStream();
+            ObjectInputStream in = new ObjectInputStream(inFromServer);
+            System.out.println("done talking to server");
+            String objrecvd = (String)in.readObject();
+            System.out.println("Server says \n" + objrecvd);
+            JSONObject jsonrecvd = (JSONObject) parser.parse(objrecvd);
+            System.out.println(jsonrecvd.get("answer"));
+
+            int answer = (int)(long)jsonrecvd.get("answer");
+
+            client.close();
+            return answer;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    public static boolean addPicturesToAlbum(Vector<Integer> picIds, int albumId)
+    {
+        try {
+            System.out.println("Connecting to " + serverName + " on port " + port);
+            Socket client = new Socket(serverName, port);
+
+            System.out.println("Just connected to " + client.getRemoteSocketAddress());
+
+
+            OutputStream outToServer = client.getOutputStream();
+            ObjectOutputStream out = new ObjectOutputStream(outToServer);
+
+
+            JSONObject obj = new JSONObject();
+            obj.put("Function","addPicturesToAlbum");
+            JSONArray jsArray = new JSONArray();
+            for (int i = 0; i < picIds.size(); i++) {
+                jsArray.add(picIds.get(i));
+            }
+            obj.put("picIds",jsArray);
+            obj.put("albumId",albumId);
+
+            String objstr = obj.toString();
+            System.out.println(objstr);
+            // JSONObject newobj = new JSONObject(objstr);
+
+
+            JSONParser parser = new JSONParser();
+            JSONObject json = (JSONObject) parser.parse(objstr);
+            JSONArray jarray = (JSONArray)json.get("userIds");
+            // if(jarray!=null)System.out.println("yaaay, it is not null");
+            // else System.out.println("booo! it is null");
+
+            // int n = jarray.size();
+            // System.out.println(n);
+
+
+            // int[] usid = new int[n];
+            // for(int i=0;i<n;i++)
+            // {
+            //    usid[i] = (int)(long)jarray.get(i);
+            // }
+            // System.out.println(usid[2]);
+
+
+            out.writeObject(objstr);
+
+            System.out.println("sent to server, awaiting response");
+            InputStream inFromServer = client.getInputStream();
+            ObjectInputStream in = new ObjectInputStream(inFromServer);
+            System.out.println("done talking to server");
+            String objrecvd = (String)in.readObject();
+            System.out.println("Server says \n" + objrecvd);
+            JSONObject jsonrecvd = (JSONObject) parser.parse(objrecvd);
+            System.out.println(jsonrecvd.get("answer"));
+
+            boolean answer = (boolean)jsonrecvd.get("answer");
+            client.close();
+            return answer;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+    public static Vector<Integer> getPicturesInAlbum(int albumId)
+    {
+        try {
+            System.out.println("Connecting to " + serverName + " on port " + port);
+            Socket client = new Socket(serverName, port);
+
+            System.out.println("Just connected to " + client.getRemoteSocketAddress());
+
+
+            OutputStream outToServer = client.getOutputStream();
+            ObjectOutputStream out = new ObjectOutputStream(outToServer);
+
+
+            JSONObject obj = new JSONObject();
+            obj.put("Function","getPicturesInAlbum");
+
+            obj.put("albumId",albumId);
+
+            String objstr = obj.toString();
+            System.out.println(objstr);
+            // JSONObject newobj = new JSONObject(objstr);
+
+
+            JSONParser parser = new JSONParser();
+            JSONObject json = (JSONObject) parser.parse(objstr);
+            // JSONArray jarray = (JSONArray)json.get("userIds");
+            // if(jarray!=null)System.out.println("yaaay, it is not null");
+            // else System.out.println("booo! it is null");
+
+            // int n = jarray.size();
+            // System.out.println(n);
+
+
+            // int[] usid = new int[n];
+            // for(int i=0;i<n;i++)
+            // {
+            //    usid[i] = (int)(long)jarray.get(i);
+            // }
+            // System.out.println(usid[2]);
+
+
+            out.writeObject(objstr);
+
+            System.out.println("sent to server, awaiting response");
+            InputStream inFromServer = client.getInputStream();
+            ObjectInputStream in = new ObjectInputStream(inFromServer);
+            System.out.println("done talking to server");
+            String objrecvd = (String)in.readObject();
+            System.out.println("Server says \n" + objrecvd);
+            JSONObject jsonrecvd = (JSONObject) parser.parse(objrecvd);
+            System.out.println(jsonrecvd.get("answer"));
+
+            JSONArray jarray = (JSONArray)jsonrecvd.get("answer");
+            if(jarray==null)System.out.println("its a null");
+            Vector<Integer> answer = new Vector<Integer>();
+            for(int i=0;i<jarray.size();i++)
+            {
+                answer.add(new Integer((int)(long)jarray.get(i)));
+            }
+
+            client.close();
+            return answer;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return (new Vector<Integer>());
+    }
+    public static boolean shareAlbumWithGroup(int albumId, int groupId) {
+
+        try {
+            System.out.println("Connecting to " + serverName + " on port " + port);
+            Socket client = new Socket(serverName, port);
+
+            System.out.println("Just connected to " + client.getRemoteSocketAddress());
+
+
+            OutputStream outToServer = client.getOutputStream();
+            ObjectOutputStream out = new ObjectOutputStream(outToServer);
+
+
+            JSONObject obj = new JSONObject();
+            obj.put("Function","shareAlbumWithGroup");
+            obj.put("albumId",albumId);
+            obj.put("groupId",groupId);
+
+            String objstr = obj.toString();
+            System.out.println(objstr);
+            // JSONObject newobj = new JSONObject(objstr);
+
+
+            JSONParser parser = new JSONParser();
+            JSONObject json = (JSONObject) parser.parse(objstr);
+            System.out.println(json.get("Function"));
+
+
+
+            out.writeObject(objstr);
+
+            System.out.println("sent to server, awaiting response");
+            InputStream inFromServer = client.getInputStream();
+            ObjectInputStream in = new ObjectInputStream(inFromServer);
+            System.out.println("done talking to server");
+            String objrecvd = (String)in.readObject();
+            System.out.println("Server says \n" + objrecvd);
+            JSONObject jsonrecvd = (JSONObject) parser.parse(objrecvd);
+            System.out.println(jsonrecvd.get("answer"));
+
+            boolean answer = (boolean)jsonrecvd.get("answer");
+
+            client.close();
+            return answer;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public static Vector<Integer> getAlbumsInGroup(int groupId)
+    {
+        try {
+            System.out.println("Connecting to " + serverName + " on port " + port);
+            Socket client = new Socket(serverName, port);
+
+            System.out.println("Just connected to " + client.getRemoteSocketAddress());
+
+
+            OutputStream outToServer = client.getOutputStream();
+            ObjectOutputStream out = new ObjectOutputStream(outToServer);
+
+
+            JSONObject obj = new JSONObject();
+            obj.put("Function","getAlbumsInGroup");
+
+            obj.put("groupId",groupId);
+
+            String objstr = obj.toString();
+            System.out.println(objstr);
+            // JSONObject newobj = new JSONObject(objstr);
+
+
+            JSONParser parser = new JSONParser();
+            JSONObject json = (JSONObject) parser.parse(objstr);
+            // JSONArray jarray = (JSONArray)json.get("userIds");
+            // if(jarray!=null)System.out.println("yaaay, it is not null");
+            // else System.out.println("booo! it is null");
+
+            // int n = jarray.size();
+            // System.out.println(n);
+
+
+            // int[] usid = new int[n];
+            // for(int i=0;i<n;i++)
+            // {
+            //    usid[i] = (int)(long)jarray.get(i);
+            // }
+            // System.out.println(usid[2]);
+
+
+            out.writeObject(objstr);
+
+            System.out.println("sent to server, awaiting response");
+            InputStream inFromServer = client.getInputStream();
+            ObjectInputStream in = new ObjectInputStream(inFromServer);
+            System.out.println("done talking to server");
+            String objrecvd = (String)in.readObject();
+            System.out.println("Server says \n" + objrecvd);
+            JSONObject jsonrecvd = (JSONObject) parser.parse(objrecvd);
+            System.out.println(jsonrecvd.get("answer"));
+
+            JSONArray jarray = (JSONArray)jsonrecvd.get("answer");
+            if(jarray==null)System.out.println("its a null");
+            Vector<Integer> answer = new Vector<Integer>();
+            for(int i=0;i<jarray.size();i++)
+            {
+                answer.add(new Integer((int)(long)jarray.get(i)));
+            }
+
+            client.close();
+            return answer;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return (new Vector<Integer>());
     }
 
 }

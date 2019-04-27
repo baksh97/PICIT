@@ -18,7 +18,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MainActivity"></activity>
+        <activity android:name=".MainActivity" />
         <activity android:name=".takePic" />
         <activity android:name=".addGrp" />
 
@@ -47,7 +47,8 @@
             </intent-filter>
         </activity>
         <activity android:name=".Signin" />
-        <activity android:name=".addMembers"></activity>
+        <activity android:name=".addMembers" />
+        <activity android:name=".profile"></activity>
     </application>
 
 </manifest>

@@ -1,6 +1,9 @@
 package com.example.kashish.picit;
 
+import android.content.Context;
 import android.content.Intent;
+import android.os.StrictMode;
+import android.support.annotation.NonNull;
 import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -12,12 +15,17 @@ import android.widget.Toast;
 import com.amazonaws.mobile.client.AWSMobileClient;
 import com.amazonaws.mobile.client.AWSStartupHandler;
 import com.amazonaws.mobile.client.AWSStartupResult;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
 
 import static com.example.kashish.picit.functions.createUser;
-import static com.example.kashish.picit.functions.isLoggedIn;
-import static com.example.kashish.picit.functions.signup;
+
 
 public class Signup extends AppCompatActivity {
+
+    FirebaseAuth mAuth = FirebaseAuth.getInstance();
 
     String TAG = "Signup";
     TextInputLayout email_tl, password_tl, username_til;
@@ -30,7 +38,22 @@ public class Signup extends AppCompatActivity {
         username_til = (TextInputLayout) findViewById(R.id.username_til_signup);
     }
 
+    void signup(final Context context, String email , String password){
+        mAuth.createUserWithEmailAndPassword(email,password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+            @Override
+            public void onComplete(@NonNull Task<AuthResult> task) {
+                if(task.isSuccessful()){
+//                    Toast.makeText(context, "Registration sucessful", Toast.LENGTH_SHORT).show();
+                    context.startActivity(new Intent(context, MainActivity.class));
+                    finish();
+                }
+                else{
+                    Toast.makeText(context, task.getException().getMessage(), Toast.LENGTH_SHORT).show();
 
+                }
+            }
+        });
+    }
 
 
     @Override
@@ -38,7 +61,13 @@ public class Signup extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_signup);
 
-        if(isLoggedIn()){
+
+
+        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+        StrictMode.setThreadPolicy(policy);
+
+        if(mAuth.getCurrentUser()!=null){
+//            signout();
             startActivity(new Intent(Signup.this, MainActivity.class));
         }
 
@@ -69,7 +98,15 @@ public class Signup extends AppCompatActivity {
                     Toast.makeText(Signup.this, "Please enter correct information!", Toast.LENGTH_SHORT).show();
                 }
                 else{
-                    signup(getApplicationContext(),email,password);
+
+                    int uid = createUser(email,userName);
+                    if(uid==-1){
+                        Toast.makeText(Signup.this, "Could not create user!", Toast.LENGTH_SHORT).show();
+                    }
+                    else {
+                        MainActivity.Uid = uid;
+                        signup(getApplicationContext(), email, password);
+                    }
 //                    if(b){
 //                        createUser(email,userName);
 //                        startActivity(new Intent(Signup.this, MainActivity.class));

@@ -17,8 +17,10 @@ import android.widget.Toast;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
+import java.util.Vector;
 
 import static com.example.kashish.picit.MainActivity.Uid;
+import static com.example.kashish.picit.functions.addPicturesToAlbum;
 import static com.example.kashish.picit.functions.createAlbumServer;
 
 public class create_album extends AppCompatActivity {
@@ -48,40 +50,50 @@ public class create_album extends AppCompatActivity {
             albumName += "\t"+String.valueOf(albumID);
             File chatDirectory=new File(this.getFilesDir(),albumName);
 
+            Vector<Integer> picIds = new Vector<>();
+
             for (String name : names) {
                 Log.d(TAG, "name: " + name);
+                picIds.add(Integer.parseInt(name.substring(0,name.length()-4)));
             }
 
-            Log.d(TAG, "Creating album with " + names.size() + " images");
+            boolean b = addPicturesToAlbum(picIds,albumID);
+            if(b){
+                Log.d(TAG, "Creating album with " + names.size() + " images");
 
-            if (!chatDirectory.exists()) {
-                chatDirectory.mkdir();
-                for (int i = 0; i < names.size(); i++) {
-                    String name = names.get(i);
-                    Bitmap bitmapImage = selectedImages.get(i);
-                    File mypath = new File(chatDirectory, name);
-                    FileOutputStream fos = null;
-                    try {
-                        fos = new FileOutputStream(mypath);
-                        // Use the compress method on the BitMap object to write image to the OutputStream
-                        bitmapImage.compress(Bitmap.CompressFormat.PNG, 100, fos);
-                        fos.close();
-                        Toast.makeText(this, "Album created!", Toast.LENGTH_SHORT).show();
-
-
-                        return true;
-                    } catch (Exception e) {
-                        Toast.makeText(this, "Could not make album!", Toast.LENGTH_SHORT).show();
-                        e.printStackTrace();
-                        return false;
+                if (!chatDirectory.exists()) {
+                    chatDirectory.mkdir();
+                    for (int i = 0; i < names.size(); i++) {
+//                    Log.d(TAG,"name: ")
+                        String name = names.get(i);
+                        Bitmap bitmapImage = selectedImages.get(i);
+                        File mypath = new File(chatDirectory, name);
+                        FileOutputStream fos = null;
+                        try {
+                            fos = new FileOutputStream(mypath);
+                            // Use the compress method on the BitMap object to write image to the OutputStream
+                            bitmapImage.compress(Bitmap.CompressFormat.PNG, 100, fos);
+                            fos.close();
+                            Toast.makeText(this, "Album created!", Toast.LENGTH_SHORT).show();
+                        } catch (Exception e) {
+                            Toast.makeText(this, "Could not make album!", Toast.LENGTH_SHORT).show();
+                            e.printStackTrace();
+                            return false;
+                        }
                     }
-                }
 
-                return false;
-            } else {
-                Toast.makeText(this, "Album with same name already exists!", Toast.LENGTH_SHORT).show();
+                    return true;
+                } else {
+                    Toast.makeText(this, "Album with same name already exists!", Toast.LENGTH_SHORT).show();
+                    return false;
+                }
+            }
+            else{
+                Toast.makeText(this, "Could not add pictures to album on server!", Toast.LENGTH_SHORT).show();
                 return false;
             }
+
+
         }
     }
 
@@ -132,9 +144,9 @@ public class create_album extends AppCompatActivity {
 
     }
 
-    int serverCreateAlbum(){
-        return 0;
-    }
+//    int serverCreateAlbum(){
+//        return 0;
+//    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -166,6 +178,7 @@ public class create_album extends AppCompatActivity {
                         onBackPressed();
                     }
                 }
+                break;
         }
 
         return super.onOptionsItemSelected(item);

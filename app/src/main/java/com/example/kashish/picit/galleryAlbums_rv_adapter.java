@@ -44,7 +44,7 @@ public class galleryAlbums_rv_adapter extends RecyclerView.Adapter<galleryAlbums
 //        holder.chatName_tv.setText(chatNames.get(position));
 //        holder.chatImage_iv.setImageBitmap(chatImages.get(position));
 
-        Toast.makeText(mContext, "position1: "+position1+" and galleryImages: "+galleryAlbums.size(), Toast.LENGTH_SHORT).show();
+//        Toast.makeText(mContext, "position1: "+position1+" and galleryImages: "+galleryAlbums.size(), Toast.LENGTH_SHORT).show();
 
         int position = 3*position1;
 
