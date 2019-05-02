@@ -6,6 +6,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -21,8 +22,11 @@ public class addGrp extends AppCompatActivity {
 
     TextInputLayout grpName_til,grpMembers_til;
     Button addGrp_btn;
+    ProgressBar pb_add_grp;
 
     void initViews(){
+        pb_add_grp = (ProgressBar) findViewById(R.id.progressBar_add_grp);
+        pb_add_grp.setVisibility(View.INVISIBLE);
         grpMembers_til = (TextInputLayout) findViewById(R.id.til_addGrp_grpMembers);
         grpName_til = (TextInputLayout) findViewById(R.id.textInputLayout_addGrp_grpName);
         addGrp_btn = (Button) findViewById(R.id.button_addGrp);
@@ -38,6 +42,7 @@ public class addGrp extends AppCompatActivity {
         addGrp_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                pb_add_grp.setVisibility(View.VISIBLE);
                 boolean error = false;
                 Group g = new Group();
                 String text = grpName_til.getEditText().getText().toString();
@@ -60,6 +65,7 @@ public class addGrp extends AppCompatActivity {
 
                 int groupID = createGroup(new Vector<Integer>(memberIds),Uid, text);
                 if(groupID==-1){
+                    pb_add_grp.setVisibility(View.INVISIBLE);
                     Toast.makeText(addGrp.this, "Could not create group!", Toast.LENGTH_SHORT).show();
                 }
                 else if(!error){
@@ -68,6 +74,7 @@ public class addGrp extends AppCompatActivity {
                     g.id = groupID;
 
                     MainActivity.addGrp(g);
+                    pb_add_grp.setVisibility(View.INVISIBLE);
                     startActivity(new Intent(addGrp.this, MainActivity.class));
                     finish();
                 }

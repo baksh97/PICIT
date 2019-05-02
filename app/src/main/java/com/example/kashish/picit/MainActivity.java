@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.net.Uri;
 import android.os.Environment;
 import android.os.StrictMode;
@@ -20,6 +21,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import java.io.BufferedReader;
@@ -50,15 +52,18 @@ import static com.example.kashish.picit.functions.setGroupInactive;
 import static com.example.kashish.picit.functions.sharePictureToGroup;
 import static com.example.kashish.picit.functions.signout;
 import static com.example.kashish.picit.functions.uploadPicture;
-import static com.example.kashish.picit.takePic.REQUEST_CAMERA;
 
 public class MainActivity extends AppCompatActivity {
+
+    public static final int REQUEST_CAMERA = 2;
 
     private static final String TAG = "MainActivity";
     //    private ListView mListView;
     private RecyclerView rv_main_active,rv_main_inactive;
     private FloatingActionButton camera_fab, gallery_fab,add_grp_fab;
     Intent cameraIntent;
+
+    private ProgressBar pb_main;
 
     String currentImagePath;
 
@@ -110,6 +115,7 @@ public class MainActivity extends AppCompatActivity {
 
             active_chats.add(0,chatName);
             active_chat_ids.add(0,chatId);
+
 
             active_adapter.notifyDataSetChanged();
             inactive_adapter.notifyDataSetChanged();
@@ -166,6 +172,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     void initViews(){
+        pb_main = (ProgressBar) findViewById(R.id.progressBar_main);
+        pb_main.setVisibility(View.INVISIBLE);
         rv_main_active = (RecyclerView) findViewById(R.id.rv_main_active);
         rv_main_inactive = (RecyclerView) findViewById(R.id.rv_main_inactive);
         camera_fab = (FloatingActionButton) findViewById(R.id.floatingActionButton_camera);
@@ -177,9 +185,9 @@ public class MainActivity extends AppCompatActivity {
     {
         if (requestCode == REQUEST_CAMERA && resultCode == Activity.RESULT_OK)
         {
-//            Bitmap photo = (Bitmap) data.getExtras().get("data");
+            Bitmap photo = (Bitmap) data.getExtras().get("data");
 
-            Bitmap photo = BitmapFactory.decodeFile(currentImagePath);
+//            Bitmap photo = BitmapFactory.decodeFile(currentImagePath);
 //            startActivity(new Intent(MainActivity.this,fullImage.class));
             Log.d(TAG,"bytes: "+photo.getByteCount());
 
@@ -190,31 +198,49 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(context, "Could not upload picture!", Toast.LENGTH_SHORT).show();
             }
             else{
-                String imageName = String.valueOf(id)+".jpg";
-                File mypath = new File(userFolder, imageName);
-//                    FileOutputStream fos = null;
-//                    fos = new FileOutputStream(mypath);
 
-                ByteArrayOutputStream out = new ByteArrayOutputStream();
-                photo.compress(Bitmap.CompressFormat.JPEG, 10, out);
-                photo = BitmapFactory.decodeStream(new ByteArrayInputStream(out.toByteArray()));
+                try {
+                    String imageName = String.valueOf(id)+".jpg";
+                    File mypath = new File(userFolder, imageName);
+                    FileOutputStream fos = null;
+                    fos = new FileOutputStream(mypath);
+                    String path = saveToInternalStorage(photo,imageName);
+                    saveImageOnFirebaseStorage(context,photo, id);              //storing on S3 to get
+                    for(int i=0;i<active_chats.size();i++){
+                        saveImageToChat(photo,active_chats.get(i)+active_chat_ids.get(i),imageName);
+                        sharePictureToGroup(id,Uid,active_chat_ids.get(i));
+                    }
+                    startActivityForResult(cameraIntent, REQUEST_CAMERA);
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+
+//                ByteArrayOutputStream out = new ByteArrayOutputStream();
+//                photo.compress(Bitmap.CompressFormat.JPEG, 10, out);
+//                photo = BitmapFactory.decodeStream(new ByteArrayInputStream(out.toByteArray()));
+
+//                if(Integer.valueOf(android.os.Build.VERSION.SDK)==28){
+//                    Matrix matrix = new Matrix();
+//
+//                    matrix.postRotate(90);
+//
+//                    Bitmap scaledBitmap = Bitmap.createScaledBitmap(photo, photo.getWidth(), photo.getHeight(), true);
+//
+//                    photo = Bitmap.createBitmap(scaledBitmap, 0, 0, scaledBitmap.getWidth(), scaledBitmap.getHeight(), matrix, true);
+//
+//                }
 
 //                    photo.compress(Bitmap.CompressFormat.JPEG, 50, fos);
 //                    fos.close();
 //                    photo = BitmapFactory.decodeFile(mypath.getAbsolutePath());
 
-                String path = saveToInternalStorage(photo,imageName);
-                saveImageOnFirebaseStorage(context,photo, id);              //storing on S3 to get
-                for(int i=0;i<active_chats.size();i++){
-                    saveImageToChat(photo,active_chats.get(i)+active_chat_ids.get(i),imageName);
-                    sharePictureToGroup(id,Uid,active_chat_ids.get(i));
-                }
-                startActivityForResult(cameraIntent, REQUEST_CAMERA);
+
             }
 
-        }else{
-            Toast.makeText(context, "Image not saved with: "+resultCode, Toast.LENGTH_SHORT).show();
         }
+//        else{
+//            Toast.makeText(context, "Image not saved."+resultCode, Toast.LENGTH_SHORT).show();
+//        }
     }
 
     public static String saveToInternalStorage(Bitmap bitmapImage, String imageName){
@@ -275,11 +301,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         context = this;
         Uid = getsUserIdFromEmailId(getEmailOfUser());
-//        Uid = 3;
-//        Toast.makeText(context, "Uid is : "+Uid, Toast.LENGTH_SHORT).show();
-
-//        StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
-//        StrictMode.setVmPolicy(builder.build());
 
         if(Uid == -1){
             Toast.makeText(context, "Server not online.. Try again later!", Toast.LENGTH_SHORT).show();
@@ -309,23 +330,21 @@ public class MainActivity extends AppCompatActivity {
             camera_fab.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-//                    File f= new File(userFolder,"temp.jpg");
-//                    File f = new File(userFolder, "temp.jpg");
-                    try {
+//                    try {
                         cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-                        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-                        File f = File.createTempFile("temp",".jpg",storageDir);
-                        currentImagePath = f.getAbsolutePath();
+//                        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+//                        File f = File.createTempFile("temp",".jpg",storageDir);
+//                        currentImagePath = f.getAbsolutePath();
 //                        f = File.createTempFile("temp",".jpg",userFolder);
 //                        Uri fileUri = Uri.fromFile(f);
-                        if(f==null){
-                            Toast.makeText(MainActivity.this, "file is null", Toast.LENGTH_SHORT).show();
-                        }
-                        else if(cameraIntent.resolveActivity(getPackageManager())!=null){
-                            Uri fileUri = FileProvider.getUriForFile(MainActivity.this, "com.example.kashish.picit.fileprovider",f);
-                            cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);
-                            startActivityForResult(cameraIntent, REQUEST_CAMERA);
-                        }
+//                        if(f==null){
+//                            Toast.makeText(MainActivity.this, "file is null", Toast.LENGTH_SHORT).show();
+//                        }
+//                        else if(cameraIntent.resolveActivity(getPackageManager())!=null){
+//                            Uri fileUri = FileProvider.getUriForFile(MainActivity.this, "com.example.kashish.picit.fileprovider",f);
+//                            cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);
+                        startActivityForResult(cameraIntent, REQUEST_CAMERA);
+//                        }
 
 
 //                    Uri outuri = FileProvider.getUriForFile(context, context.getApplicationContext().getPackageName() + ".com.example.kashish.picit.provider", f);
@@ -333,9 +352,9 @@ public class MainActivity extends AppCompatActivity {
 //                    startActivityForResult(intent, 2);
 
 
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+//                    } catch (IOException e) {
+//                        e.printStackTrace();
+//                    }
 
                 }
             });

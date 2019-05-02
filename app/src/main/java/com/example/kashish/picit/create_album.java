@@ -11,7 +11,9 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import java.io.File;
@@ -30,6 +32,7 @@ public class create_album extends AppCompatActivity {
     private static final String TAG = "create_album";
     RecyclerView rv_album;
     EditText albumName_et;
+    ProgressBar pb_create_album;
 
     ArrayList<Bitmap> images;
     ArrayList<String> imageNames;
@@ -38,6 +41,14 @@ public class create_album extends AppCompatActivity {
     public static ArrayList<Bitmap> selectedImages = new ArrayList<>();
     public static ArrayList<String> selectedNames = new ArrayList<>();
 
+    void initViews(){
+        pb_create_album = (ProgressBar) findViewById(R.id.progressBar_create_album);
+        pb_create_album.setVisibility(View.INVISIBLE);
+
+        rv_album = (RecyclerView) findViewById(R.id.rv_album);
+        albumName_et = (EditText) findViewById(R.id.albumName_et);
+
+    }
 
 
     boolean createAlbum(ArrayList<String> names,ArrayList<Bitmap> selectedImages, String albumName){
@@ -108,13 +119,13 @@ public class create_album extends AppCompatActivity {
         selectedImages = new ArrayList<>();
         selectedNames = new ArrayList<>();
 
+        initViews();
+
         imageNames = new ArrayList<>();
         images = new ArrayList<>();
         imageFiles = new ArrayList<>();
         getImagesInFolder(userFolder,imageFiles,images,imageNames);
 
-        rv_album = (RecyclerView) findViewById(R.id.rv_album);
-        albumName_et = (EditText) findViewById(R.id.albumName_et);
 
         rv_album.setLayoutManager(new LinearLayoutManager(this));
         album_rv_adapter adapter = new album_rv_adapter(imageNames,images,this);
@@ -139,16 +150,23 @@ public class create_album extends AppCompatActivity {
 
         switch(item.getItemId()){
             case R.id.create_album:
+                pb_create_album.setVisibility(View.VISIBLE);
+
                 String albumName = albumName_et.getText().toString();
                 if(albumName.equals("")){
+                    pb_create_album.setVisibility(View.INVISIBLE);
+
                     Toast.makeText(this, "Please enter a valid album Name!", Toast.LENGTH_SHORT).show();
                 }
                 else if(selectedNames.size()==0){
+                    pb_create_album.setVisibility(View.INVISIBLE);
+
                     Toast.makeText(this, "Please select atleast 1 image to create album!", Toast.LENGTH_SHORT).show();
                 }
                 else {
                     boolean b = createAlbum(selectedNames, selectedImages, "album_" + albumName_et.getText().toString());
                     if (b) {
+                        pb_create_album.setVisibility(View.INVISIBLE);
 
 //                        Intent intent = new Intent(create_album.this, galleryImages.class);
 //                        intent.putExtra("file", create_album.this.getFilesDir());

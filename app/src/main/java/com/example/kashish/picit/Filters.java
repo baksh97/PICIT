@@ -15,6 +15,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.Toast;
 
@@ -32,6 +33,7 @@ public class Filters extends AppCompatActivity {
     Spinner filters_spinner;
     ImageView filteredImage_iv;
     Button save_btn;
+    ProgressBar pb_filters;
 
     byte[] b;
     Bitmap bmp;
@@ -47,10 +49,14 @@ public class Filters extends AppCompatActivity {
         filterNames.add("grayscale");
         filterNames.add("blue");
         filterNames.add("red");
+        filterNames.add("negative");
+        filterNames.add("contrast_improvement");
     }
 
 
     void initViews(){
+        pb_filters = (ProgressBar) findViewById(R.id.progressBar_filters);
+        pb_filters.setVisibility(View.INVISIBLE);
         filteredImage_iv = (ImageView) findViewById(R.id.imageView_filters);
         filters_spinner = (Spinner) findViewById(R.id.spinner_filters);
         save_btn = (Button) findViewById(R.id.button_save_filter);
@@ -73,10 +79,14 @@ public class Filters extends AppCompatActivity {
         save_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                pb_filters.setVisibility(View.VISIBLE);
                 int id = uploadPicture(Uid);
                 BitmapDrawable bitmapDrawable = (BitmapDrawable) filteredImage_iv.getDrawable();
                 saveToInternalStorage(bitmapDrawable.getBitmap(), String.valueOf(id)+".jpg");
                 saveImageOnFirebaseStorage(Filters.this,bitmapDrawable.getBitmap(), id);
+
+                pb_filters.setVisibility(View.INVISIBLE);
+
 //                saveToInternalStorage()
                 onBackPressed();
             }
@@ -94,9 +104,11 @@ public class Filters extends AppCompatActivity {
         filters_spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, final int position, long id) {
-                Toast.makeText(Filters.this, "Filter "+position+" applied",Toast.LENGTH_SHORT).show();
+//                Toast.makeText(Filters.this, "Filter "+position+" applied",Toast.LENGTH_SHORT).show();
 
                 if(position!=0) {
+                    pb_filters.setVisibility(View.VISIBLE);
+
 //                    final Handler h = new Handler() {
 //                        public void handleMessage(Message msg){
 //                            if(msg.what == 0){
@@ -113,6 +125,8 @@ public class Filters extends AppCompatActivity {
 
                             if (b2 == null) {
                                 Log.d(TAG, "here: b2 is null");
+                                pb_filters.setVisibility(View.INVISIBLE);
+
 //                                h.sendEmptyMessage(0);
                                 Toast.makeText(Filters.this, "Could not apply filter! Is there a face in this image?", Toast.LENGTH_SHORT).show();
                             } else {
@@ -123,6 +137,8 @@ public class Filters extends AppCompatActivity {
                                 Log.d(TAG, "new bitmap created!");
 
                                 filteredImage_iv.setImageBitmap(bbmp);
+                                pb_filters.setVisibility(View.INVISIBLE);
+
 //                            }
 //                        filteredImage_iv.setBackground(functions.bitmap2Drawable(bbmp,Filters.this));
                         }

@@ -134,11 +134,11 @@ public class galleryImages_rv_adapter extends RecyclerView.Adapter<galleryImages
                 }
             }
 
-            intent.putExtra("path",imageFiles.get(position).getAbsolutePath());
-//            ByteArrayOutputStream stream = new ByteArrayOutputStream();
-//            galleryImages.get(position).compress(Bitmap.CompressFormat.PNG, 100, stream);
-//            byte[] byteArray = stream.toByteArray();
-//            intent.putExtra("image",byteArray);
+//            intent.putExtra("path",imageFiles.get(position).getAbsolutePath());
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            galleryImages.get(position).compress(Bitmap.CompressFormat.PNG, 100, stream);
+            byte[] byteArray = stream.toByteArray();
+            intent.putExtra("image",byteArray);
             mContext.startActivity(intent);
 
         }

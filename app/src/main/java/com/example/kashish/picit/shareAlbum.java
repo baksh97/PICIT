@@ -9,7 +9,9 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -23,8 +25,10 @@ public class shareAlbum extends AppCompatActivity {
     RecyclerView rv_shareAlbum;
     int albumId;
     private String TAG = "shareAlbum";
-
+    ProgressBar pb_share_album;
     void initViews(){
+        pb_share_album = (ProgressBar) findViewById(R.id.progressBar_share_album);
+        pb_share_album.setVisibility(View.INVISIBLE);
         rv_shareAlbum = (RecyclerView) findViewById(R.id.rv_shareAlbum);
     }
 
@@ -63,7 +67,10 @@ public class shareAlbum extends AppCompatActivity {
 
         switch(item.getItemId()){
             case R.id.share_album_actual:
+                pb_share_album.setVisibility(View.VISIBLE);
                 if(selectedGroupsIds.size()==0){
+                    pb_share_album.setVisibility(View.INVISIBLE);
+
                     Toast.makeText(this, "Please select atleast 1 group to share album!", Toast.LENGTH_SHORT).show();
                 }
                 else {
@@ -74,6 +81,7 @@ public class shareAlbum extends AppCompatActivity {
                             Toast.makeText(this, "Could not share with group: "+i, Toast.LENGTH_SHORT).show();
                         }
                     }
+                    pb_share_album.setVisibility(View.INVISIBLE);
                     onBackPressed();
                 }
                 break;

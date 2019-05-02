@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.amazonaws.mobile.client.AWSMobileClient;
@@ -29,10 +30,13 @@ public class Signup extends AppCompatActivity {
 
     FirebaseAuth mAuth = FirebaseAuth.getInstance();
 
+    ProgressBar pb_signup;
     String TAG = "Signup";
     TextInputLayout email_tl, password_tl, username_til;
     Button signup_btn,signin_btn;
     void initViews(){
+        pb_signup = (ProgressBar) findViewById(R.id.progressBar_signup);
+        pb_signup.setVisibility(View.INVISIBLE);
         email_tl = (TextInputLayout) findViewById(R.id.email_til_signup);
         password_tl = (TextInputLayout) findViewById(R.id.password_til_signup);
         signup_btn = (Button) findViewById(R.id.button_signup);
@@ -46,11 +50,13 @@ public class Signup extends AppCompatActivity {
             public void onComplete(@NonNull Task<AuthResult> task) {
                 if(task.isSuccessful()){
 //                    Toast.makeText(context, "Registration sucessful", Toast.LENGTH_SHORT).show();
+                    pb_signup.setVisibility(View.INVISIBLE);
                     context.startActivity(new Intent(context, MainActivity.class));
                     finish();
                 }
                 else{
                     Toast.makeText(context, task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                    pb_signup.setVisibility(View.INVISIBLE);
 
                 }
             }
@@ -120,21 +126,27 @@ public class Signup extends AppCompatActivity {
             signup_btn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    pb_signup.setVisibility(View.VISIBLE);
+
                     String email = email_tl.getEditText().getText().toString();
                     String password = password_tl.getEditText().getText().toString();
                     String userName = username_til.getEditText().getText().toString();
 
                     if (password.equals("") || email.equals("") || userName.equals("")) {
+                        pb_signup.setVisibility(View.INVISIBLE);
+
                         Toast.makeText(Signup.this, "Please enter correct information!", Toast.LENGTH_SHORT).show();
                     } else {
 
                         int uid = createUser(email, userName);
                         if (uid == -1) {
+                            pb_signup.setVisibility(View.INVISIBLE);
                             Toast.makeText(Signup.this, "Could not create user!", Toast.LENGTH_SHORT).show();
                         } else {
                             MainActivity.Uid = uid;
                             signup(getApplicationContext(), email, password);
                         }
+
 //                    if(b){
 //                        createUser(email,userName);
 //                        startActivity(new Intent(Signup.this, MainActivity.class));

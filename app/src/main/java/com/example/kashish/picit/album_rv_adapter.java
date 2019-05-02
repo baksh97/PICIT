@@ -74,7 +74,7 @@ public class album_rv_adapter extends RecyclerView.Adapter<album_rv_adapter.View
 
     @Override
     public int getItemCount() {
-        return galleryImages.size();
+        return (galleryImages.size()/2) + (galleryImages.size()%2);
     }
 
 

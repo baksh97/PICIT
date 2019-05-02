@@ -8,6 +8,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -19,9 +20,12 @@ public class Signin extends AppCompatActivity {
 
     FirebaseAuth mAuth = FirebaseAuth.getInstance();
 
+    ProgressBar pb_signin;
     TextInputLayout email_tl, password_tl;
     Button signin_btn;
     void initViews(){
+        pb_signin = (ProgressBar) findViewById(R.id.progressBar_signin);
+        pb_signin.setVisibility(View.INVISIBLE);
         email_tl = (TextInputLayout) findViewById(R.id.email_til_signin);
         password_tl = (TextInputLayout) findViewById(R.id.password_til_signin);
         signin_btn = (Button) findViewById(R.id.button_signin);
@@ -35,10 +39,13 @@ public class Signin extends AppCompatActivity {
 //                    Toast.makeText(context, "Signin", Toast.LENGTH_SHORT).show();
                     Intent intent = new Intent(context, MainActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    pb_signin.setVisibility(View.INVISIBLE);
                     context.startActivity(intent);
                     finish();
                 }
                 else{
+                    pb_signin.setVisibility(View.INVISIBLE);
+
                     Toast.makeText(context, task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                 }
             }
@@ -58,10 +65,13 @@ public class Signin extends AppCompatActivity {
         signin_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                pb_signin.setVisibility(View.VISIBLE);
+
                 String email = email_tl.getEditText().getText().toString();
                 String password = password_tl.getEditText().getText().toString();
 
                 if(password.equals("") || email.equals("")){
+                    pb_signin.setVisibility(View.INVISIBLE);
                     Toast.makeText(Signin.this, "Please enter correct information!", Toast.LENGTH_SHORT).show();
                 }
                 else{

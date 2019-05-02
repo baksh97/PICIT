@@ -212,7 +212,7 @@ public class functions {
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                 // taskSnapshot.getMetadata() contains file metadata such as size, content-type, etc.
                 // ...
-                Toast.makeText(context, "Image saved", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(context, "Image saved", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -307,6 +307,7 @@ public class functions {
     }
 
     private static final String serverName = "52.90.143.1";
+//    private static final String serverName = "10.208.23.134";
     // private static final String serverName = "localhost";
     private static final int port = 8500;
 
