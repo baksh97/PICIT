@@ -31,11 +31,14 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.lang.reflect.Array;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Random;
 import java.util.Vector;
+
+import static com.example.kashish.picit.MainActivity.userFolder;
 
 public class functions {
     private static final String TAG = "functions";
@@ -63,26 +66,22 @@ public class functions {
         mAuth.signOut();
     }
 
-
-//    static void getUpdatesLocal(Context context, String chatName, int chatID){
-//
-//    }
-
     static Drawable bitmap2Drawable(Bitmap b, Context context){
         Drawable d = new BitmapDrawable(context.getResources(), b);
         return d;
     }
 
     static void getUpdates(Context context, String chatName, int chatID){
-//        MainActivity.refreshingChat = true;
-//        int count = 0;
-//        int total = 0;
         Vector<String> images = getPicturesInGroup(chatID);
+        Vector<Integer> albums = getAlbumsInGroup(chatID);
+
+        Log.d(TAG,"found albums in chat: "+albums.size());
 
         if(images==null){
             Toast.makeText(context, "Could not load images! Please try again later.", Toast.LENGTH_SHORT).show();
-        }else{
-//            total = images.size();
+        }else if(albums==null){
+            Toast.makeText(context, "Could not load albums! Please try again later.", Toast.LENGTH_SHORT).show();
+        } else{
             String chatFolder = chatName+String.valueOf(chatID);
 
             for(String s: images){
@@ -91,7 +90,22 @@ public class functions {
                 String picid = parts[0];
                 String picName = picid+".jpg";
 
-                downloadImaeFromFirebaseStorage(context,chatFolder,picName);
+                downloadImaeFromFirebaseStorage(context,userFolder,chatFolder,picName);
+            }
+
+            for(int i: albums){
+                String albumName = getAlbumNameFromId(i);
+                String albumPath = chatFolder+"/"+"album_"+albumName+"\t"+String.valueOf(i);
+
+//                File albumDirectory=new File(context.getFilesDir(),albumPath);
+//                albumDirectory.mkdir();
+
+                Vector<Integer> imageInAlbum = getPicturesInAlbum(i);
+                for(int j: imageInAlbum) {
+                    String picName = String.valueOf(j)+".jpg";
+                    downloadImaeFromFirebaseStorage(context,userFolder,albumPath,picName);
+                    Log.d(TAG,"saving image in folder: "+albumPath);
+                }
             }
         }
 
@@ -100,12 +114,13 @@ public class functions {
         return;
     }
 
-    static void downloadImaeFromFirebaseStorage(final Context context, String chatFolder , final String imageName){
+    static void downloadImaeFromFirebaseStorage(final Context context,File file, String chatFolder , final String imageName){
         StorageReference islandRef = storageRef.child(imageName);
 
-        File chatDirectory=new File(context.getFilesDir(),chatFolder);
+        File chatDirectory=new File(file,chatFolder);
 
         if(!chatDirectory.exists()) {
+            Log.d(TAG, "creating new folder for downloading image");
             chatDirectory.mkdir();
         }
         File mypath = new File(chatDirectory,imageName);
@@ -113,7 +128,7 @@ public class functions {
         if(mypath.exists()){
 //            count++;
 //            Log.d(TAG, "count increased: "+count);
-            Toast.makeText(context, "File already exists: "+mypath.getName(), Toast.LENGTH_SHORT).show();
+//            Toast.makeText(context, "File already exists: "+mypath.getName(), Toast.LENGTH_SHORT).show();
         }
         else {
 
@@ -142,12 +157,48 @@ public class functions {
         return mAuth.getCurrentUser().getEmail();
     }
 
+    static public void deleteRecursive(File fileOrDirectory) {
+
+        if (fileOrDirectory.isDirectory()) {
+            for (File child : fileOrDirectory.listFiles()) {
+                deleteRecursive(child);
+            }
+        }
+
+        fileOrDirectory.delete();
+    }
+
+    static void getImagesInFolder(File folder, ArrayList<File> files, ArrayList<Bitmap> images, ArrayList<String> names){
+        if(folder.isDirectory()){
+            for(File fs: folder.listFiles()){
+                Log.d(TAG, fs.getAbsolutePath());
+                if(!fs.isDirectory() && fs.getAbsolutePath().endsWith(".jpg")) {
+                    String imagePath = fs.getAbsolutePath();
+                    Bitmap myBitmap = BitmapFactory.decodeFile(imagePath);
+                    images.add(0,myBitmap);
+                    names.add(0,fs.getName());
+                    files.add(0,fs);
+                }
+            }
+        }
+    }
+
+    static void getAlbumsInFolder(File folder, ArrayList<File> albums){
+        if(folder.isDirectory()){
+            for(File fs: folder.listFiles()){
+//                Log.d(TAG, fs.getAbsolutePath());
+                if(fs.isDirectory() && fs.getName().startsWith("album_")){
+                    albums.add(0,fs);
+                }
+            }
+        }
+    }
 
     static void saveImageOnFirebaseStorage(final Context context, Bitmap b, int id){
         String imageName = String.valueOf(id)+".jpg";
         StorageReference imageRef = storageRef.child(imageName);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        b.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+        b.compress(Bitmap.CompressFormat.PNG, 100, baos);
         byte[] data = baos.toByteArray();
         UploadTask uploadTask = imageRef.putBytes(data);
         uploadTask.addOnFailureListener(new OnFailureListener() {
@@ -166,32 +217,6 @@ public class functions {
         });
     }
 
-//    static
-
-//    static boolean addPicturesToAlbum(Vector<Integer> picids, int albumID){
-//        return true;
-//    }
-//
-//    static int createUser(String email, String userName){
-//        return 0;
-//    }
-//
-//    static int uploadPicture(int Uid){
-//        Random r = new Random();
-//        return r.nextInt();
-////        return ;
-//    }
-//
-//    static void sharePictureToGroup(int picid, int uid, int groupid){
-//
-//    }
-//
-//    static int severCreateGroup(int Uid, Vector<Integer> memberIds, String grpName){
-//        Random r = new Random();
-//        return r.nextInt();
-////        return 0;
-//    }
-//
     static int getsUserIdFromEmailId(String m){
         Vector<String> v = new Vector<>();
         v.add(m);
@@ -221,11 +246,69 @@ public class functions {
 //        return 1;
 //    }
 
+    public static String getAlbumNameFromId(int id){
+        return "";
+    }
+
+    public static Vector<String> getUsersInGroup(int groupId) {
+
+        try {
+            System.out.println("Connecting to " + serverName + " on port " + port);
+            Socket client = new Socket(serverName, port);
+
+            System.out.println("Just connected to " + client.getRemoteSocketAddress());
+
+
+            OutputStream outToServer = client.getOutputStream();
+            ObjectOutputStream out = new ObjectOutputStream(outToServer);
+
+
+            JSONObject obj = new JSONObject();
+            obj.put("Function","getUsersInGroup");
+            obj.put("groupId",groupId);
+
+            String objstr = obj.toString();
+            System.out.println(objstr);
+            // JSONObject newobj = new JSONObject(objstr);
+
+
+            JSONParser parser = new JSONParser();
+            JSONObject json = (JSONObject) parser.parse(objstr);
+            System.out.println(json.get("Function"));
+
+
+
+            out.writeObject(objstr);
+
+            System.out.println("sent to server, awaiting response");
+            InputStream inFromServer = client.getInputStream();
+            ObjectInputStream in = new ObjectInputStream(inFromServer);
+            System.out.println("done talking to server");
+            String objrecvd = (String)in.readObject();
+            System.out.println("Server says \n" + objrecvd);
+            JSONObject jsonrecvd = (JSONObject) parser.parse(objrecvd);
+            System.out.println(jsonrecvd.get("answer"));
+            JSONArray jarray = (JSONArray)jsonrecvd.get("answer");
+            if(jarray==null)System.out.println("its a null");
+            Vector<String> answer = new Vector<String>();
+            for(int i=0;i<jarray.size();i++)
+            {
+                answer.add((String)jarray.get(i));
+            }
+
+            // boolean answer = (boolean)jsonrecvd.get("answer");
+
+            client.close();
+            return answer;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return (new Vector<String>());
+    }
+
     private static final String serverName = "52.90.143.1";
     // private static final String serverName = "localhost";
     private static final int port = 8500;
-
-
 
     public static byte[] applyFilter(byte[] imageByteArray, String filterCode) {
 
@@ -248,7 +331,7 @@ public class functions {
             // baos.flush();
             // byte[] imageInByte = baos.toByteArray();
             // baos.close();
-            String imageDataString = Base64.getEncoder().encodeToString(imageByteArray);
+            String imageDataString = android.util.Base64.encodeToString(imageByteArray,android.util.Base64.NO_WRAP);
 
             JSONObject obj = new JSONObject();
             obj.put("Function","applyFilter");
@@ -291,9 +374,15 @@ public class functions {
             JSONObject jsonrecvd = (JSONObject) parser.parse(objrecvd);
             System.out.println(jsonrecvd.get("answer"));
             client.close();
-            String answer = (String)jsonrecvd.get("answer");
-            byte[] ret_imageByteArray = Base64.getDecoder().decode(answer);
-            return ret_imageByteArray;
+            try {
+                String answer = (String) jsonrecvd.get("answer");
+                byte[] ret_imageByteArray =  android.util.Base64.decode(answer,android.util.Base64.NO_WRAP);
+                return ret_imageByteArray;
+            }
+            catch (Exception e){
+                return null;
+            }
+
 
 
         } catch (Exception e) {
@@ -351,8 +440,8 @@ public class functions {
         }
         return 0;
     }
-    public static Vector<Integer> getUseridsFromEmailids(Vector<String> emailIds)
-    {
+
+    public static Vector<Integer> getUseridsFromEmailids(Vector<String> emailIds) {
         try {
             System.out.println("Connecting to " + serverName + " on port " + port);
             Socket client = new Socket(serverName, port);
@@ -422,10 +511,11 @@ public class functions {
         return (new Vector<Integer>());
     }
 
-    public static int createGroup(Vector<Integer> userIds, int creatorUserId, String groupName)
-
-    {
+    public static int createGroup(Vector<Integer> userIds, int creatorUserId, String groupName) {
         try {
+
+            Log.d(TAG,"createGroup: "+userIds.size());
+
             System.out.println("Connecting to " + serverName + " on port " + port);
             Socket client = new Socket(serverName, port);
 
@@ -589,6 +679,7 @@ public class functions {
         }
         return false;
     }
+
     public static boolean setGroupActive(int userId, int groupId) {
 
         try {
@@ -744,7 +835,6 @@ public class functions {
         }
         return (new Vector<String>());
     }
-
 
     public static int uploadPicture(int userId) {
 
@@ -951,8 +1041,7 @@ public class functions {
         return 0;
     }
 
-    public static boolean addPicturesToAlbum(Vector<Integer> picIds, int albumId)
-    {
+    public static boolean addPicturesToAlbum(Vector<Integer> picIds, int albumId) {
         try {
             System.out.println("Connecting to " + serverName + " on port " + port);
             Socket client = new Socket(serverName, port);
@@ -1015,8 +1104,8 @@ public class functions {
         }
         return false;
     }
-    public static Vector<Integer> getPicturesInAlbum(int albumId)
-    {
+
+    public static Vector<Integer> getPicturesInAlbum(int albumId) {
         try {
             System.out.println("Connecting to " + serverName + " on port " + port);
             Socket client = new Socket(serverName, port);
@@ -1082,6 +1171,7 @@ public class functions {
         }
         return (new Vector<Integer>());
     }
+
     public static boolean shareAlbumWithGroup(int albumId, int groupId) {
 
         try {
@@ -1132,8 +1222,7 @@ public class functions {
         return false;
     }
 
-    public static Vector<Integer> getAlbumsInGroup(int groupId)
-    {
+    public static Vector<Integer> getAlbumsInGroup(int groupId) {
         try {
             System.out.println("Connecting to " + serverName + " on port " + port);
             Socket client = new Socket(serverName, port);
@@ -1199,5 +1288,4 @@ public class functions {
         }
         return (new Vector<Integer>());
     }
-
 }

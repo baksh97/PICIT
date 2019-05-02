@@ -11,6 +11,7 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
@@ -50,10 +51,6 @@ public class album_rv_adapter extends RecyclerView.Adapter<album_rv_adapter.View
 
     @Override
     public void onBindViewHolder(@NonNull album_rv_adapter.ViewHolder holder, int position1) {
-//        holder.chatName_tv.setText(chatNames.get(position));
-//        holder.chatImage_iv.setImageBitmap(chatImages.get(position));
-
-//        holder.
         int position = 2*position1;
         if(position < galleryImages.size()){
             holder.albumImage_iv_1.setBackground(functions.bitmap2Drawable(galleryImages.get(position),mContext));
@@ -77,7 +74,6 @@ public class album_rv_adapter extends RecyclerView.Adapter<album_rv_adapter.View
 
     @Override
     public int getItemCount() {
-
         return galleryImages.size();
     }
 
@@ -85,13 +81,13 @@ public class album_rv_adapter extends RecyclerView.Adapter<album_rv_adapter.View
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener{
         ConstraintLayout completeLayout;
         ImageView albumImage_iv_1,albumImage_iv_2;
-        RadioButton r1, r2;
+        CheckBox r1, r2;
 
         public ViewHolder(View itemView) {
             super(itemView);
 
-            r1 = (RadioButton) itemView.findViewById(R.id.radioButton_1);
-            r2 = (RadioButton) itemView.findViewById(R.id.radioButton_2);
+            r1 = (CheckBox) itemView.findViewById(R.id.checkBox_1);
+            r2 = (CheckBox) itemView.findViewById(R.id.checkBox_2);
 
             albumImage_iv_1 = (ImageView) itemView.findViewById(R.id.imageView_album_1);
             albumImage_iv_2 = (ImageView) itemView.findViewById(R.id.imageView_album_2);
@@ -125,30 +121,17 @@ public class album_rv_adapter extends RecyclerView.Adapter<album_rv_adapter.View
             switch (v.getId()){
                 case R.id.imageView_album_2:
                     position++;
-//                    Intent intent = new Intent(mContext, fullImage.class);
-//                    intent.putExtra("image",galleryImages.get(position));
-//                    mContext.startActivity(intent);
-//                    break;
                 case R.id.imageView_album_1:
                     intent.putExtra("image",galleryImages.get(position));
                     ByteArrayOutputStream stream = new ByteArrayOutputStream();
                     galleryImages.get(position).compress(Bitmap.CompressFormat.PNG, 100, stream);
                     byte[] byteArray = stream.toByteArray();
-
-//            Intent in1 = new Intent(this, Activity2.class);
-//            in1.putExtra("image",byteArray);
                     intent.putExtra("image",byteArray);
                     mContext.startActivity(intent);
-//                    mContext.startActivity(intent);
                     break;
-                case R.id.radioButton_2:
+                case R.id.checkBox_2:
                     position++;
-//                    if(r2.)
-
                     if(r2.isChecked()) {
-
-//                        Toast.makeText(mContext, "adding "+imageNames.get(position)+" to list", Toast.LENGTH_SHORT).show();
-
                         selectedImages.add(galleryImages.get(position));
                         selectedNames.add(imageNames.get(position));
                     }
@@ -157,9 +140,8 @@ public class album_rv_adapter extends RecyclerView.Adapter<album_rv_adapter.View
                         selectedNames.remove(imageNames.get(position));
                     }
                     break;
-                case R.id.radioButton_1:
+                case R.id.checkBox_1:
                     if(r1.isChecked()) {
-//                        Toast.makeText(mContext, "adding "+imageNames.get(position)+" to list", Toast.LENGTH_SHORT).show();
                         selectedImages.add(galleryImages.get(position));
                         selectedNames.add(imageNames.get(position));
                     }
@@ -169,7 +151,6 @@ public class album_rv_adapter extends RecyclerView.Adapter<album_rv_adapter.View
                     }
                     break;
             }
-
         }
 
         @Override

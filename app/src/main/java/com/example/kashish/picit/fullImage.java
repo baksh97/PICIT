@@ -21,8 +21,10 @@ public class fullImage extends AppCompatActivity {
 
         Intent intent = getIntent();
 
-        byte[] byteArray = getIntent().getByteArrayExtra("image");
-        Bitmap bmp = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
+//        byte[] byteArray = getIntent().getByteArrayExtra("image");
+        String path = intent.getStringExtra("path");
+        Bitmap bmp = BitmapFactory.decodeFile(path);
+//        Bitmap bmp = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
 
         imView.setImageBitmap(bmp);
 

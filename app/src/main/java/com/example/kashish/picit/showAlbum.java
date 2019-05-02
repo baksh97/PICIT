@@ -17,6 +17,7 @@ public class showAlbum extends AppCompatActivity {
     private static final String TAG = "showAlbum";
     ArrayList<Bitmap> images;
     ArrayList<String> names;
+    ArrayList<File> imageFiles;
     String albumName;
 
     RecyclerView rv_show_album;
@@ -24,30 +25,9 @@ public class showAlbum extends AppCompatActivity {
     void getImages(File file){
         images = new ArrayList<>();
         names = new ArrayList<>();
-//        folders = new ArrayList<>();
-//        imagesFiles = new ArrayList<>();
-//        File file = this.getFilesDir();
-        if(file.isDirectory()){
+        imageFiles = new ArrayList<>();
 
-            Log.d(TAG,"file "+file.getName()+" is a directory.");
-
-            for(File fs: file.listFiles()){
-                Log.d(TAG, fs.getAbsolutePath());
-                if(!fs.isDirectory() && fs.getAbsolutePath().endsWith(".jpg")) {
-                    Log.d(TAG,"fs: "+fs.getName());
-//                    imagesFiles.add(0,fs);
-                    String imagePath = fs.getAbsolutePath();
-                    Bitmap myBitmap = BitmapFactory.decodeFile(imagePath);
-                    images.add(0,myBitmap);
-                    names.add(fs.getName());
-                }
-//                else{
-//                    folders.add(fs);
-//                }
-//                fs.delete();
-//                holder.imageview.setImageBitmap(myBitmap);
-            }
-        }
+        functions.getImagesInFolder(file, imageFiles, images, names);
     }
 
     @Override
@@ -62,7 +42,7 @@ public class showAlbum extends AppCompatActivity {
         rv_show_album = (RecyclerView) findViewById(R.id.rv_show_album);
 
         rv_show_album.setLayoutManager(new LinearLayoutManager(this));
-        galleryImages_rv_adapter adapter = new galleryImages_rv_adapter(names, images,this);
+        galleryImages_rv_adapter adapter = new galleryImages_rv_adapter(imageFiles,names, images,this);
         rv_show_album.setAdapter(adapter);
 
     }

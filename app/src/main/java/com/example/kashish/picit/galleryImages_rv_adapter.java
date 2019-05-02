@@ -13,22 +13,25 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.util.ArrayList;
 
 public class galleryImages_rv_adapter extends RecyclerView.Adapter<galleryImages_rv_adapter.ViewHolder>{
 
     private static final String TAG = "main_rv_adapter";
-//    private ArrayList<String> chatNames;
     private ArrayList<Bitmap> galleryImages;
     private ArrayList<String> imageNames;
+    private ArrayList<File> imageFiles;
     private Context mContext;
 
 
-    public galleryImages_rv_adapter(ArrayList<String> imageNames,ArrayList<Bitmap> galleryImages, Context mContext) {
+    public galleryImages_rv_adapter(ArrayList<File> imageFiles,ArrayList<String> imageNames,ArrayList<Bitmap> galleryImages, Context mContext) {
         this.imageNames = imageNames;
         this.galleryImages = galleryImages;
+        this.imageFiles = imageFiles;
         this.mContext = mContext;
     }
     @NonNull
@@ -41,9 +44,6 @@ public class galleryImages_rv_adapter extends RecyclerView.Adapter<galleryImages
 
     @Override
     public void onBindViewHolder(@NonNull galleryImages_rv_adapter.ViewHolder holder, int position1) {
-//        holder.chatName_tv.setText(chatNames.get(position));
-//        holder.chatImage_iv.setImageBitmap(chatImages.get(position));
-
         int position = 3*position1;
 
         holder.galleryImage_iv_1.setEnabled(true);
@@ -53,19 +53,12 @@ public class galleryImages_rv_adapter extends RecyclerView.Adapter<galleryImages
         if(galleryImages.size()>position){
             holder.galleryImage_iv_1.setBackground(functions.bitmap2Drawable(galleryImages.get(position),mContext));
             holder.galleryImage_tv_1.setText(imageNames.get(position));
-//            holder.galleryImage_iv_1.setImageBitmap(galleryImages.get(position));
-//            holder.galleryImage_iv_1.setImageBitmap(galleryImages.get(position));
             if(galleryImages.size()>position+1){
-//                holder.galleryImage_iv_2.setImageBitmap(galleryImages.get(position+1));
                 holder.galleryImage_iv_2.setBackground(functions.bitmap2Drawable(galleryImages.get(position+1),mContext));
                 holder.galleryImage_tv_2.setText(imageNames.get(position+1));
                 if(galleryImages.size()>position+2){
-//                    holder.galleryImage_iv_3.setImageBitmap(galleryImages.get(position+2));
-//                    Drawable d = functions.bitmap2Drawable(galleryImages.get(position+2),mContext);
-//                    holder.galleryImage_iv_3.setBackground(d);
                     holder.galleryImage_iv_3.setBackground(functions.bitmap2Drawable(galleryImages.get(position+2),mContext));
                     holder.galleryImage_tv_3.setText(imageNames.get(position+2));
-
                 }
                 else{
                     holder.galleryImage_iv_3.setEnabled(false);
@@ -86,10 +79,7 @@ public class galleryImages_rv_adapter extends RecyclerView.Adapter<galleryImages
             holder.galleryImage_tv_1.setVisibility(View.INVISIBLE);
             holder.galleryImage_tv_2.setVisibility(View.INVISIBLE);
             holder.galleryImage_tv_3.setVisibility(View.INVISIBLE);
-
         }
-
-
     }
 
     @Override
@@ -99,7 +89,6 @@ public class galleryImages_rv_adapter extends RecyclerView.Adapter<galleryImages
         if(s%3>0)x++;
         return x;
     }
-
 
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener{
         ConstraintLayout completeLayout;
@@ -125,17 +114,14 @@ public class galleryImages_rv_adapter extends RecyclerView.Adapter<galleryImages
 
             galleryImage_iv_3.setOnClickListener(this);
             galleryImage_iv_3.setOnLongClickListener(this);
-
         }
 
         @Override
         public void onClick(View v) {
             int position = 3*getAdapterPosition();
             Intent intent = new Intent(mContext, fullImage.class);
-//            intent.putExtra("")
             switch (v.getId()){
                 case R.id.imageView_row_gallery_1:{
-//                    position
                     break;
                 }
                 case R.id.imageView_row_gallery_2:{
@@ -146,51 +132,76 @@ public class galleryImages_rv_adapter extends RecyclerView.Adapter<galleryImages
                     position += 2;
                     break;
                 }
-
             }
 
-            ByteArrayOutputStream stream = new ByteArrayOutputStream();
-            galleryImages.get(position).compress(Bitmap.CompressFormat.PNG, 100, stream);
-            byte[] byteArray = stream.toByteArray();
-
-//            Intent in1 = new Intent(this, Activity2.class);
-//            in1.putExtra("image",byteArray);
-            intent.putExtra("image",byteArray);
+            intent.putExtra("path",imageFiles.get(position).getAbsolutePath());
+//            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+//            galleryImages.get(position).compress(Bitmap.CompressFormat.PNG, 100, stream);
+//            byte[] byteArray = stream.toByteArray();
+//            intent.putExtra("image",byteArray);
             mContext.startActivity(intent);
 
         }
 
         @Override
         public boolean onLongClick(final View v) {
-
             PopupMenu popupGroup = new PopupMenu(mContext, v);
             popupGroup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                 @Override
                 public boolean onMenuItemClick(MenuItem item) {
+                    int position;
                     switch (item.getItemId()){
                         case R.id.add_filters:
-                            int position = 3*getAdapterPosition();
-                            switch (v.getId()){
-                                case R.id.imageView_row_gallery_1:{
-//                    position
-                                    break;
-                                }
-                                case R.id.imageView_row_gallery_2:{
-                                    position += 1;
-                                    break;
-                                }
-                                case R.id.imageView_row_gallery_3:{
-                                    position += 2;
-                                    break;
-                                }
+                            int apilevel = Integer.valueOf(android.os.Build.VERSION.SDK);
+                            if(apilevel < 23){
+                                Toast.makeText(mContext, "Your device does not support this feature! Require a min level 26 API.", Toast.LENGTH_SHORT).show();
                             }
-                            Intent intent = new Intent(mContext,Filters.class);
-                            ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                            galleryImages.get(position).compress(Bitmap.CompressFormat.PNG, 100, stream);
-                            byte[] byteArray = stream.toByteArray();
-                            intent.putExtra("image",byteArray);
-                            mContext.startActivity(intent);
+                            else {
+
+                                position = 3 * getAdapterPosition();
+                                switch (v.getId()) {
+                                    case R.id.imageView_row_gallery_1: {
+                                        //                    position
+                                        break;
+                                    }
+                                    case R.id.imageView_row_gallery_2: {
+                                        position += 1;
+                                        break;
+                                    }
+                                    case R.id.imageView_row_gallery_3: {
+                                        position += 2;
+                                        break;
+                                    }
+                                }
+                                Intent intent = new Intent(mContext, Filters.class);
+                                ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                                galleryImages.get(position).compress(Bitmap.CompressFormat.PNG, 100, stream);
+                                byte[] byteArray = stream.toByteArray();
+                                intent.putExtra("image", byteArray);
+                                mContext.startActivity(intent);
+                            }
                             break;
+
+//                        case R.id.delete_image:
+//                            position = 3*getAdapterPosition();
+//                            switch (v.getId()){
+//                                case R.id.imageView_row_gallery_1:{
+//                                    break;
+//                                }
+//                                case R.id.imageView_row_gallery_2:{
+//                                    position += 1;
+//                                    break;
+//                                }
+//                                case R.id.imageView_row_gallery_3:{
+//                                    position += 2;
+//                                    break;
+//                                }
+//                            }
+//                            functions.deleteRecursive(imageFiles.get(position));
+//                            imageNames.remove(position);
+//                            galleryImages.remove(position);
+//                            notifyDataSetChanged();
+//                            break;
                     }
                     return false;
                 }

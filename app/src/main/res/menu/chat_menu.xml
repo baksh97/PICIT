@@ -9,7 +9,17 @@
 
 
     <item
-        android:id="@+id/refresh_chat"
-        android:title="Refresh"
+        android:id="@+id/albums_chat"
+        android:title="Albums"
         app:showAsAction="ifRoom"/>
+
+    <item
+        android:id="@+id/member_chat"
+        android:title="Members"
+        app:showAsAction="ifRoom"/>
+
+    <item
+    android:id="@+id/refresh_chat"
+    android:title="Refresh"
+    app:showAsAction="ifRoom"/>
 </menu>

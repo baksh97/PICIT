@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.StrictMode;
 import android.support.annotation.NonNull;
 import android.support.design.widget.TextInputLayout;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -21,6 +22,7 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 
 import static com.example.kashish.picit.functions.createUser;
+import static com.example.kashish.picit.functions.signout;
 
 
 public class Signup extends AppCompatActivity {
@@ -63,6 +65,8 @@ public class Signup extends AppCompatActivity {
 
 
 
+
+
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
 
@@ -70,43 +74,67 @@ public class Signup extends AppCompatActivity {
 //            signout();
             startActivity(new Intent(Signup.this, MainActivity.class));
         }
+        else {
 
-        AWSMobileClient.getInstance().initialize(this, new AWSStartupHandler() {
-            @Override
-            public void onComplete(AWSStartupResult awsStartupResult) {
-                Log.d(TAG, "AWSMobileClient is instantiated and you are connected to AWS!");
-            }
-        }).execute();
+//            if (ContextCompat.checkSelfPermission(Signup.this,
+//                    Manifest.permission.WRITE_EXTERNAL_STORAGE)
+//                    != PackageManager.PERMISSION_GRANTED) {
+//
+//                // Permission is not granted
+//                // Should we show an explanation?
+//                if (ActivityCompat.shouldShowRequestPermissionRationale(thisActivity,
+//                        Manifest.permission.READ_CONTACTS)) {
+//                    // Show an explanation to the user *asynchronously* -- don't block
+//                    // this thread waiting for the user's response! After the user
+//                    // sees the explanation, try again to request the permission.
+//                } else {
+//                    // No explanation needed; request the permission
+//                    ActivityCompat.requestPermissions(thisActivity,
+//                            new String[]{Manifest.permission.READ_CONTACTS},
+//                            MY_PERMISSIONS_REQUEST_READ_CONTACTS);
+//
+//                    // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
+//                    // app-defined int constant. The callback method gets the
+//                    // result of the request.
+//                }
+//            } else {
+//                // Permission has already been granted
+//            }
 
-        initViews();
-
-        signin_btn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(Signup.this, Signin.class));
-            }
-        });
-
-        signup_btn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String email = email_tl.getEditText().getText().toString();
-                String password = password_tl.getEditText().getText().toString();
-                String userName = username_til.getEditText().getText().toString();
-
-                if(password.equals("") || email.equals("") || userName.equals("")){
-                    Toast.makeText(Signup.this, "Please enter correct information!", Toast.LENGTH_SHORT).show();
+            AWSMobileClient.getInstance().initialize(this, new AWSStartupHandler() {
+                @Override
+                public void onComplete(AWSStartupResult awsStartupResult) {
+                    Log.d(TAG, "AWSMobileClient is instantiated and you are connected to AWS!");
                 }
-                else{
+            }).execute();
 
-                    int uid = createUser(email,userName);
-                    if(uid==-1){
-                        Toast.makeText(Signup.this, "Could not create user!", Toast.LENGTH_SHORT).show();
-                    }
-                    else {
-                        MainActivity.Uid = uid;
-                        signup(getApplicationContext(), email, password);
-                    }
+            initViews();
+
+            signin_btn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    startActivity(new Intent(Signup.this, Signin.class));
+                }
+            });
+
+            signup_btn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    String email = email_tl.getEditText().getText().toString();
+                    String password = password_tl.getEditText().getText().toString();
+                    String userName = username_til.getEditText().getText().toString();
+
+                    if (password.equals("") || email.equals("") || userName.equals("")) {
+                        Toast.makeText(Signup.this, "Please enter correct information!", Toast.LENGTH_SHORT).show();
+                    } else {
+
+                        int uid = createUser(email, userName);
+                        if (uid == -1) {
+                            Toast.makeText(Signup.this, "Could not create user!", Toast.LENGTH_SHORT).show();
+                        } else {
+                            MainActivity.Uid = uid;
+                            signup(getApplicationContext(), email, password);
+                        }
 //                    if(b){
 //                        createUser(email,userName);
 //                        startActivity(new Intent(Signup.this, MainActivity.class));
@@ -116,9 +144,10 @@ public class Signup extends AppCompatActivity {
 //                        Toast.makeText(Signup.this, "Could not signup!", Toast.LENGTH_SHORT).show();
 //                    }
 
+                    }
                 }
-            }
-        });
+            });
+        }
 
     }
 }

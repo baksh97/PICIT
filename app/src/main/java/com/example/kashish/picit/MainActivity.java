@@ -4,7 +4,13 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
+import android.os.Environment;
+import android.os.StrictMode;
+import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -17,11 +23,14 @@ import android.view.View;
 import android.widget.Toast;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
@@ -51,7 +60,10 @@ public class MainActivity extends AppCompatActivity {
     private FloatingActionButton camera_fab, gallery_fab,add_grp_fab;
     Intent cameraIntent;
 
+    String currentImagePath;
+
     public static int Uid = 0;
+    public static File userFolder;
 
     public static boolean refreshingChat = false;
 
@@ -63,261 +75,56 @@ public class MainActivity extends AppCompatActivity {
     static main_rv_adapter_active active_adapter;
     static main_rv_adapter_inactive inactive_adapter;
 
-    static void addGrp(Group g, Context context){
-        try {
-            String fileName = "chats_picit";
-            File file = new File(context.getFilesDir(),fileName);
-            FileOutputStream outputStream;
-            if(file.exists()){
-                outputStream = new FileOutputStream(file,true);
-            }
-            else{
-                outputStream = new FileOutputStream(file);
-            }
-
-//            Toast.makeText(context,"chat stored in file: "+file.getAbsolutePath(),Toast.LENGTH_SHORT).show();
-            outputStream.write((g.name+"\t"+g.id+"\tactive\n").getBytes());
-            outputStream.close();
-
+    static void addGrp(Group g){
             inactive_chats.add(g.name);
             inactive_chat_ids.add(g.id);
-
             inactive_adapter.notifyDataSetChanged();
-
-            Log.d(TAG,"reading file");
-            InputStream inputStream = context.openFileInput("chats_picit");
-            BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
-            String line;
-
-            while ((line = br.readLine()) != null) {
-
-//                Toast.makeText(context, "Read line: " + line, Toast.LENGTH_SHORT).show();
-                Log.d(TAG, "Line: " + line);
-            }
-
-            inputStream.close();
-
-
-        } catch (java.io.IOException e) {
-            e.printStackTrace();
-        }
-
-
     }
 
     static void active2inactive(int position,Context context){
+        int chatId = active_chat_ids.get(position);
+        boolean b = setGroupInactive(Uid, chatId);
+        if(b){
+            String chatName = active_chats.remove(position);
+            active_chat_ids.remove(position);
 
-        String s = "";
-        try {
-            InputStream inputStream = null;
-            inputStream = context.openFileInput("chats_picit");
-            BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
-            String line;
+            inactive_chats.add(0,chatName);
+            inactive_chat_ids.add(0,chatId);
 
-            String changedLine = "";
-
-            while ((line = br.readLine()) != null) {
-
-//                Toast.makeText(context, "Read line: " + line, Toast.LENGTH_SHORT).show();
-//                Log.d(TAG, "Line: " + line);
-                String[] parts = line.split("\t");
-
-                if(parts.length!=0) {
-
-//                    Toast.makeText(context,"active chats: "+active_chats.size(),Toast.LENGTH_SHORT).show();
-//                    Log.d(TAG,"active chats: "+active_chats.size());
-
-                    if (parts[0].equals(active_chats.get(position)) && parts[1].equals(active_chat_ids.get(position))) {
-                        changedLine = parts[0] + "\t" + parts[1] + "\t" + "inactive\n";
-                    } else {
-                        s += line + "\n";
-                    }
-                }
-            }
-
-            s += changedLine;
-            inputStream.close();
-
-            String fileName = "chats_picit";
-            File file = new File(context.getFilesDir(),fileName);
-            FileOutputStream outputStream = new FileOutputStream(file);
-
-//            Toast.makeText(context,"chat stored in file: "+file.getAbsolutePath(),Toast.LENGTH_SHORT).show();
-            outputStream.write(s.getBytes());
-            outputStream.close();
-
-
-        } catch (java.io.IOException e) {
-            e.printStackTrace();
+            active_adapter.notifyDataSetChanged();
+            inactive_adapter.notifyDataSetChanged();
         }
-
-        String chatName = active_chats.remove(position);
-        int chatId = active_chat_ids.remove(position);
-
-        inactive_chats.add(0,chatName);
-        inactive_chat_ids.add(0,chatId);
-
-        active_adapter.notifyDataSetChanged();
-        inactive_adapter.notifyDataSetChanged();
-//        context.startActivity(new Intent(context,MainActivity.class));
-
-        setGroupInactive(Uid, active_chat_ids.get(position));
+        else{
+            Toast.makeText(context, "Could not set Inactive! Please try again later.", Toast.LENGTH_SHORT).show();
+        }
+        Log.d(TAG, "setInactive: "+b);
     }
-
-//    static void setGroupInactive(int uid, int gid){
-//
-//    }
-//
-//    static void setGroupActive(int uid, int gid){
-//
-//    }
 
     static void inactive2active(int position,Context context){
+        boolean b = setGroupActive(Uid, inactive_chat_ids.get(position));
+        Log.d(TAG, "setActive: "+b);
 
-        String s = "";
-        try {
-            InputStream inputStream = null;
-            inputStream = context.openFileInput("chats_picit");
-            BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
-            String line;
+        if(b){
+            String chatName = inactive_chats.remove(position);
+            int chatId = inactive_chat_ids.remove(position);
 
-            String changedLine = "";
+            active_chats.add(0,chatName);
+            active_chat_ids.add(0,chatId);
 
-            while ((line = br.readLine()) != null) {
-
-//                Toast.makeText(context, "Read line: " + line, Toast.LENGTH_SHORT).show();
-//                Log.d(TAG, "Line: " + line);
-                String[] parts = line.split("\t");
-
-                if(parts.length!=0) {
-                    if (parts[0].equals(inactive_chats.get(position)) && parts[1].equals(inactive_chat_ids.get(position))) {
-                        changedLine = parts[0] + "\t" + parts[1] + "\t" + "active\n";
-                    } else {
-                        s += line + "\n";
-                    }
-                }
-            }
-
-            s += changedLine;
-            inputStream.close();
-
-            String fileName = "chats_picit";
-            File file = new File(context.getFilesDir(),fileName);
-            FileOutputStream outputStream = new FileOutputStream(file);
-
-//            Toast.makeText(context,"chat stored in file: "+file.getAbsolutePath(),Toast.LENGTH_SHORT).show();
-            outputStream.write(s.getBytes());
-            outputStream.close();
-
-
-            setGroupActive(Uid, inactive_chat_ids.get(position));
-
-        } catch (java.io.IOException e) {
-            e.printStackTrace();
+            active_adapter.notifyDataSetChanged();
+            inactive_adapter.notifyDataSetChanged();
         }
-
-//        context.startActivity(new Intent(context,MainActivity.class));
-        String chatName = inactive_chats.remove(position);
-        int chatId = inactive_chat_ids.remove(position);
-
-        active_chats.add(0,chatName);
-        active_chat_ids.add(0,chatId);
-
-        active_adapter.notifyDataSetChanged();
-        inactive_adapter.notifyDataSetChanged();
-    }
-
-    public void deleteRecursive(File fileOrDirectory) {
-
-        if (fileOrDirectory.isDirectory()) {
-            for (File child : fileOrDirectory.listFiles()) {
-                deleteRecursive(child);
-            }
+        else{
+            Toast.makeText(context, "Could not set Active! Please try again later.", Toast.LENGTH_SHORT).show();
         }
-
-        fileOrDirectory.delete();
     }
-
-//    void initChats(){
-//        active_chat_ids = new ArrayList<>();
-//        active_chats = new ArrayList<>();
-//        inactive_chat_ids = new ArrayList<>();
-//        inactive_chats = new ArrayList<>();
-////        active_chats = new ArrayList<>(Arrays.asList(active));
-////        inactive_chats = new ArrayList<>(Arrays.asList(inactive));
-////
-////        active_chat_ids = new ArrayList<>(Arrays.asList(activeIds));
-////        inactive_chat_ids = new ArrayList<>(Arrays.asList(inactiveIds));
-//
-//        try {
-//            for(File f: this.getFilesDir().listFiles()){
-//                Log.d(TAG,"file: "+f.getAbsolutePath());
-////                if(f.isDirectory()){
-////                    deleteRecursive(f);
-////                }
-////                if(f.getAbsolutePath().endsWith("/chats_picit")){
-////                    Log.d(TAG,"found file: "+f.getAbsolutePath());
-////                    f.delete();
-////                }
-//            }
-//
-////            File file = new File(this.getFilesDir(),"chats_picit");
-//            InputStream inputStream = this.openFileInput("chats_picit");
-//            BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
-//            String line;
-//
-//            while ((line = br.readLine()) != null) {
-//
-////                Toast.makeText(this, "Read line: "+line,Toast.LENGTH_SHORT).show();
-//                Log.d(TAG,"Line: "+line);
-////                text.append(line);
-////                text.append('\n');
-//                String[] parts = line.split("\t");
-//                for(String s: parts){
-//                    Log.d(TAG,"parts: "+s);
-//                }
-//                if(parts.length!=0) {
-//
-//                    Toast.makeText(this,"parts[2]: "+parts[2],Toast.LENGTH_SHORT).show();
-//                    Log.d(TAG,"parts[2]: "+parts[2]);
-//
-//                    if (parts[2].contains("inactive")) {
-//                        inactive_chats.add(0, parts[0]);
-//                        inactive_chat_ids.add(0, parts[1]);
-//                    } else{
-//                        active_chats.add(0, parts[0]);
-//                        active_chat_ids.add(0, parts[1]);
-//                    }
-//                }
-//            }
-//            br.close();
-//        } catch (java.io.IOException e) {
-//            e.printStackTrace();
-//        }
-//    }
-
 
     void initChats(){
-//        active_chat_ids = new ArrayList<>();
-//        inactive_chat_ids = new ArrayList<>();
-//        active_chats = new ArrayList<>();
-//        inactive_chats = new ArrayList<>();
         active_chats.clear();
         inactive_chats.clear();
         active_chat_ids.clear();
         inactive_chat_ids.clear();
         Vector<String> v = getGroupsOfUser(Uid);
-
-//        for(File f: this.getFilesDir().listFiles()){
-//                Log.d(TAG,"file: "+f.getAbsolutePath());
-////                if(f.isDirectory()){
-//                    deleteRecursive(f);
-////                }
-////                if(f.getAbsolutePath().endsWith("/chats_picit")){
-////                    Log.d(TAG,"found file: "+f.getAbsolutePath());
-////                    f.delete();
-////                }
-//            }
 
         if(v!=null) {
             for (String s : v) {
@@ -340,13 +147,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     void saveImageToChat(Bitmap bitmapImage, String chatFolder, String imageName){
-        File chatDirectory=new File(this.getFilesDir(),chatFolder);
+        File chatDirectory=new File(userFolder,chatFolder);
 
         if(!chatDirectory.exists()) {
             chatDirectory.mkdir();
         }
         File mypath = new File(chatDirectory,imageName);
-
 
         FileOutputStream fos = null;
         try {
@@ -358,20 +164,6 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
     }
-
-//    void getUpdates(String chatName, int chatID){
-//        Vector<String> images = getPicturesInGroup(chatID);
-//
-//        for(String s: images){
-//            String[] parts = s.split(",");
-//            String picid = parts[0];
-//
-//
-//            //TODO
-//        }
-//    }
-
-
 
     void initViews(){
         rv_main_active = (RecyclerView) findViewById(R.id.rv_main_active);
@@ -385,32 +177,48 @@ public class MainActivity extends AppCompatActivity {
     {
         if (requestCode == REQUEST_CAMERA && resultCode == Activity.RESULT_OK)
         {
-            Bitmap photo = (Bitmap) data.getExtras().get("data");
+//            Bitmap photo = (Bitmap) data.getExtras().get("data");
+
+            Bitmap photo = BitmapFactory.decodeFile(currentImagePath);
+//            startActivity(new Intent(MainActivity.this,fullImage.class));
+            Log.d(TAG,"bytes: "+photo.getByteCount());
+
+
 
             int id = uploadPicture(Uid);
             if(id==-1){
                 Toast.makeText(context, "Could not upload picture!", Toast.LENGTH_SHORT).show();
             }
             else{
-                String path = saveToInternalStorage(photo,String.valueOf(id)+".jpg");
+                String imageName = String.valueOf(id)+".jpg";
+                File mypath = new File(userFolder, imageName);
+//                    FileOutputStream fos = null;
+//                    fos = new FileOutputStream(mypath);
 
+                ByteArrayOutputStream out = new ByteArrayOutputStream();
+                photo.compress(Bitmap.CompressFormat.JPEG, 10, out);
+                photo = BitmapFactory.decodeStream(new ByteArrayInputStream(out.toByteArray()));
+
+//                    photo.compress(Bitmap.CompressFormat.JPEG, 50, fos);
+//                    fos.close();
+//                    photo = BitmapFactory.decodeFile(mypath.getAbsolutePath());
+
+                String path = saveToInternalStorage(photo,imageName);
                 saveImageOnFirebaseStorage(context,photo, id);              //storing on S3 to get
-                String imageName = String.valueOf(id);
                 for(int i=0;i<active_chats.size();i++){
                     saveImageToChat(photo,active_chats.get(i)+active_chat_ids.get(i),imageName);
                     sharePictureToGroup(id,Uid,active_chat_ids.get(i));
                 }
-//            Toast.makeText(takePic.this, "image stored at: "+path, Toast.LENGTH_SHORT).show();
                 startActivityForResult(cameraIntent, REQUEST_CAMERA);
             }
 
+        }else{
+            Toast.makeText(context, "Image not saved with: "+resultCode, Toast.LENGTH_SHORT).show();
         }
     }
 
     public static String saveToInternalStorage(Bitmap bitmapImage, String imageName){
-
-        File mypath = new File(context.getFilesDir(), imageName);
-
+        File mypath = new File(userFolder, imageName);
         FileOutputStream fos = null;
         try {
             fos = new FileOutputStream(mypath);
@@ -436,12 +244,12 @@ public class MainActivity extends AppCompatActivity {
 
         switch(item.getItemId()){
             case R.id.show_albums:
-                startActivity(new Intent(MainActivity.this, galleryAlbums.class));
+                Intent i = new Intent(MainActivity.this, galleryAlbums.class);
+                i.putExtra("file", userFolder);
+                startActivity(i);
                 break;
             case R.id.refresh_main:
                 initChats();
-//                active_adapter.notifyDataSetChanged();
-//                inactive_adapter.notifyDataSetChanged();
                 break;
             case R.id.signout_main:
                 signout();
@@ -449,7 +257,6 @@ public class MainActivity extends AppCompatActivity {
                 break;
 
             case R.id.profile_main:
-//                signout();
                 startActivity(new Intent(MainActivity.this, profile.class));
                 break;
         }
@@ -457,20 +264,28 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    void updateUserFolder(){
+        File f = new File(this.getFilesDir(),String.valueOf(Uid));
+        if(!f.exists())f.mkdir();
+        userFolder = f;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-
-
         context = this;
-
         Uid = getsUserIdFromEmailId(getEmailOfUser());
+//        Uid = 3;
+//        Toast.makeText(context, "Uid is : "+Uid, Toast.LENGTH_SHORT).show();
+
+//        StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
+//        StrictMode.setVmPolicy(builder.build());
 
         if(Uid == -1){
             Toast.makeText(context, "Server not online.. Try again later!", Toast.LENGTH_SHORT).show();
         }
         else{
+            updateUserFolder();
             setContentView(R.layout.activity_main);
             initViews();
 
@@ -483,17 +298,10 @@ public class MainActivity extends AppCompatActivity {
             active_adapter = new main_rv_adapter_active(active_chats, active_chat_ids, null, this);
             inactive_adapter = new main_rv_adapter_inactive(inactive_chats, inactive_chat_ids, null, this);
 
-//            if (active_chats == null) {
-                initChats();
-//            }
-
-
-
-
+            initChats();
 
             rv_main_active.setLayoutManager(new LinearLayoutManager(this));
             rv_main_inactive.setLayoutManager(new LinearLayoutManager(this));
-
 
             rv_main_active.setAdapter(active_adapter);
             rv_main_inactive.setAdapter(inactive_adapter);
@@ -501,9 +309,34 @@ public class MainActivity extends AppCompatActivity {
             camera_fab.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-//                startActivity(new Intent(MainActivity.this, takePic.class));
-                    cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-                    startActivityForResult(cameraIntent, REQUEST_CAMERA);
+//                    File f= new File(userFolder,"temp.jpg");
+//                    File f = new File(userFolder, "temp.jpg");
+                    try {
+                        cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
+                        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+                        File f = File.createTempFile("temp",".jpg",storageDir);
+                        currentImagePath = f.getAbsolutePath();
+//                        f = File.createTempFile("temp",".jpg",userFolder);
+//                        Uri fileUri = Uri.fromFile(f);
+                        if(f==null){
+                            Toast.makeText(MainActivity.this, "file is null", Toast.LENGTH_SHORT).show();
+                        }
+                        else if(cameraIntent.resolveActivity(getPackageManager())!=null){
+                            Uri fileUri = FileProvider.getUriForFile(MainActivity.this, "com.example.kashish.picit.fileprovider",f);
+                            cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);
+                            startActivityForResult(cameraIntent, REQUEST_CAMERA);
+                        }
+
+
+//                    Uri outuri = FileProvider.getUriForFile(context, context.getApplicationContext().getPackageName() + ".com.example.kashish.picit.provider", f);
+//                    cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, outuri);
+//                    startActivityForResult(intent, 2);
+
+
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
                 }
             });
 
@@ -511,7 +344,7 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onClick(View v) {
                     Intent i = new Intent(MainActivity.this, galleryImages.class);
-                    i.putExtra("file", MainActivity.this.getFilesDir());
+                    i.putExtra("file", userFolder);
                     startActivity(i);
                 }
             });
@@ -530,6 +363,7 @@ public class MainActivity extends AppCompatActivity {
         a.addCategory(Intent.CATEGORY_HOME);
         a.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(a);
-
     }
+
 }
+

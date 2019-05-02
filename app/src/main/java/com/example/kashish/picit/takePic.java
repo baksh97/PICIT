@@ -46,7 +46,7 @@ public class takePic extends AppCompatActivity {
 //        File dir=
 //                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
 //
-//        output=new File(dir, "CameraContentDemo.jpeg");
+//        output=new File(dir, "CameraContentDemo.PNG");
 //        i.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(output));
 //
 //        startActivityForResult(i, CONTENT_REQUEST);
@@ -77,7 +77,7 @@ public class takePic extends AppCompatActivity {
 //        File dir=
 //                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
 //
-//        output=new File(dir, "CameraContentDemo.jpeg");
+//        output=new File(dir, "CameraContentDemo.PNG");
 //        i.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(output));
 //
 //        startActivityForResult(i, CONTENT_REQUEST);
@@ -90,7 +90,7 @@ public class takePic extends AppCompatActivity {
 //            if (resultCode == RESULT_OK) {
 //                Intent i=new Intent(Intent.ACTION_VIEW);
 //
-//                i.setDataAndType(Uri.fromFile(output), "image/jpeg");
+//                i.setDataAndType(Uri.fromFile(output), "image/PNG");
 //                startActivity(i);
 //                finish();
 //            }
@@ -128,7 +128,7 @@ public class takePic extends AppCompatActivity {
 //        File mypath = new File(this.getFilesDir(), "picit/"+MediaStore.Images.Media.DATE_TAKEN+".jpg");
 //
 //        values.put(MediaStore.Images.Media.DATE_TAKEN, System.currentTimeMillis());
-//        values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
+//        values.put(MediaStore.Images.Media.MIME_TYPE, "image/PNG");
 ////        values.put(MediaStore.MediaColumns.DATA, mypath);
 ////
 ////        this.context.getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
@@ -204,7 +204,7 @@ public class takePic extends AppCompatActivity {
 //    private File createImageFile() throws IOException {
 //        // Create an image file name
 //        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-//        String imageFileName = "JPEG_" + timeStamp + "_";
+//        String imageFileName = "PNG_" + timeStamp + "_";
 //        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
 //        Toast.makeText(this, storageDir.getAbsolutePath(),Toast.LENGTH_SHORT).show();
 //        File image = File.createTempFile(

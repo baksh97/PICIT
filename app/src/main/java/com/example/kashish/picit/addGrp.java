@@ -67,7 +67,7 @@ public class addGrp extends AppCompatActivity {
                     g.name = text;
                     g.id = groupID;
 
-                    MainActivity.addGrp(g,addGrp.this);
+                    MainActivity.addGrp(g);
                     startActivity(new Intent(addGrp.this, MainActivity.class));
                     finish();
                 }

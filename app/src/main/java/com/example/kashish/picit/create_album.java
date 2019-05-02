@@ -20,8 +20,10 @@ import java.util.ArrayList;
 import java.util.Vector;
 
 import static com.example.kashish.picit.MainActivity.Uid;
+import static com.example.kashish.picit.MainActivity.userFolder;
 import static com.example.kashish.picit.functions.addPicturesToAlbum;
 import static com.example.kashish.picit.functions.createAlbumServer;
+import static com.example.kashish.picit.functions.getImagesInFolder;
 
 public class create_album extends AppCompatActivity {
 
@@ -31,6 +33,7 @@ public class create_album extends AppCompatActivity {
 
     ArrayList<Bitmap> images;
     ArrayList<String> imageNames;
+    ArrayList<File> imageFiles;
 
     public static ArrayList<Bitmap> selectedImages = new ArrayList<>();
     public static ArrayList<String> selectedNames = new ArrayList<>();
@@ -48,7 +51,7 @@ public class create_album extends AppCompatActivity {
         else {
 
             albumName += "\t"+String.valueOf(albumID);
-            File chatDirectory=new File(this.getFilesDir(),albumName);
+            File chatDirectory=new File(userFolder,albumName);
 
             Vector<Integer> picIds = new Vector<>();
 
@@ -97,34 +100,6 @@ public class create_album extends AppCompatActivity {
         }
     }
 
-
-    void getImages(){
-        images = new ArrayList<>();
-        imageNames = new ArrayList<>();
-//        folders = new ArrayList<>();
-//        imagesFiles = new ArrayList<>();
-        File file = this.getFilesDir();
-        if(file.isDirectory()){
-            for(File fs: file.listFiles()){
-                Log.d(TAG, fs.getAbsolutePath());
-                if(!fs.isDirectory() && fs.getAbsolutePath().endsWith(".jpg")) {
-//                    imagesFiles.add(0,fs);
-                    imageNames.add(fs.getName());
-                    Log.d(TAG, "name: "+fs.getName());
-                    String imagePath = fs.getAbsolutePath();
-                    Bitmap myBitmap = BitmapFactory.decodeFile(imagePath);
-                    images.add(0,myBitmap);
-                }
-//                else{
-//                    folders.add(fs);
-//                }
-//                fs.delete();
-//                holder.imageview.setImageBitmap(myBitmap);
-            }
-        }
-//        re
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -133,7 +108,10 @@ public class create_album extends AppCompatActivity {
         selectedImages = new ArrayList<>();
         selectedNames = new ArrayList<>();
 
-        getImages();
+        imageNames = new ArrayList<>();
+        images = new ArrayList<>();
+        imageFiles = new ArrayList<>();
+        getImagesInFolder(userFolder,imageFiles,images,imageNames);
 
         rv_album = (RecyclerView) findViewById(R.id.rv_album);
         albumName_et = (EditText) findViewById(R.id.albumName_et);

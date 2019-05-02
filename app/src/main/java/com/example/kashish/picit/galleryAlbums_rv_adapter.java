@@ -19,6 +19,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.util.ArrayList;
 
+import static com.example.kashish.picit.functions.deleteRecursive;
+
 public class galleryAlbums_rv_adapter extends RecyclerView.Adapter<galleryAlbums_rv_adapter.ViewHolder>{
 
     private static final String TAG = "main_rv_adapter";
@@ -127,24 +129,21 @@ public class galleryAlbums_rv_adapter extends RecyclerView.Adapter<galleryAlbums
             galleryImage_tv_3 = (TextView) itemView.findViewById(R.id.textView_row_gallery_3);
 
             galleryImage_iv_1.setOnClickListener(this);
-//            galleryImage_iv_1.setOnLongClickListener(this);
+            galleryImage_iv_1.setOnLongClickListener(this);
 
             galleryImage_iv_2.setOnClickListener(this);
-//            galleryImage_iv_2.setOnLongClickListener(this);
+            galleryImage_iv_2.setOnLongClickListener(this);
 
             galleryImage_iv_3.setOnClickListener(this);
-//            galleryImage_iv_3.setOnLongClickListener(this);
+            galleryImage_iv_3.setOnLongClickListener(this);
 
         }
 
         @Override
         public void onClick(View v) {
             int position = 3*getAdapterPosition();
-//            Intent intent = new Intent(mContext, fullImage.class);
-//            intent.putExtra("")
             switch (v.getId()){
                 case R.id.imageView_row_gallery_1:{
-//                    position
                     break;
                 }
                 case R.id.imageView_row_gallery_2:{
@@ -159,37 +158,46 @@ public class galleryAlbums_rv_adapter extends RecyclerView.Adapter<galleryAlbums
             }
 
             Intent intent = new Intent(mContext,showAlbum.class);
-//            intent.p
-//            intent.put
             intent.putExtra("file",galleryAlbums.get(position));
             mContext.startActivity(intent);
-
-//            ByteArrayOutputStream stream = new ByteArrayOutputStream();
-//            galleryAlbums.get(position).compress(Bitmap.CompressFormat.PNG, 100, stream);
-//            byte[] byteArray = stream.toByteArray();
-//
-////            Intent in1 = new Intent(this, Activity2.class);
-////            in1.putExtra("image",byteArray);
-//            intent.putExtra("image",byteArray);
-//            mContext.startActivity(intent);
 
         }
 
         @Override
-        public boolean onLongClick(View v) {
+        public boolean onLongClick(final View v) {
             PopupMenu popupGroup = new PopupMenu(mContext, v);
             popupGroup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                 @Override
                 public boolean onMenuItemClick(MenuItem item) {
-                    switch (item.getItemId()){
-                        case R.id.add_filters:
-                            mContext.startActivity(new Intent(mContext,Filters.class));
+                    int position = 3*getAdapterPosition();
+                    switch (v.getId()){
+                        case R.id.imageView_row_gallery_1:{
                             break;
+                        }
+                        case R.id.imageView_row_gallery_2:{
+                            position += 1;
+                            break;
+                        }
+                        case R.id.imageView_row_gallery_3:{
+                            position += 2;
+                            break;
+                        }
+                    }
+                    switch (item.getItemId()){
+//                        case R.id.delete_album:
+//                            deleteRecursive(galleryAlbums.get(position));
+//                            notifyDataSetChanged();
+//                            break;
+
+                        case R.id.share_album:
+                            Intent intent = new Intent(mContext,shareAlbum.class);
+                            intent.putExtra("albumID",Integer.parseInt(galleryAlbums.get(position).getName().split("\t")[1]));
+                            mContext.startActivity(intent);
                     }
                     return false;
                 }
             });
-            popupGroup.inflate(R.menu.gallery_action);
+            popupGroup.inflate(R.menu.gallery_albums_action);
             popupGroup.show();
             return false;
         }
