@@ -45,6 +45,8 @@ public class addMembers extends AppCompatActivity {
                 int memberID = getsUserIdFromEmailId(members);
                 if(memberID==-1){
                     Toast.makeText(addMembers.this, "Invalid email ID!", Toast.LENGTH_SHORT).show();
+                    pb_add_member.setVisibility(View.INVISIBLE);
+
                 }
                 else {
                     int chatID = intent.getIntExtra("chatID", 0);

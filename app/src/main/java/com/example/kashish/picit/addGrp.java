@@ -49,34 +49,41 @@ public class addGrp extends AppCompatActivity {
                 String allmember = grpMembers_til.getEditText().getText().toString();
                 String [] members = allmember.split(",");
 
-                Vector<Integer> memberIds = new Vector<>();
-                memberIds.add(Uid);
-                for(String m: members){
-                    int mId = getsUserIdFromEmailId(m);
-                    if(mId!=-1) {
-                        memberIds.add(mId);
-                    }
-                    else{
-                        error = true;
-                        Toast.makeText(addGrp.this, "Member id of "+m+" not found!", Toast.LENGTH_SHORT).show();
-                        break;
-                    }
-                }
-
-                int groupID = createGroup(new Vector<Integer>(memberIds),Uid, text);
-                if(groupID==-1){
+                if(text=="" || allmember==""){
                     pb_add_grp.setVisibility(View.INVISIBLE);
-                    Toast.makeText(addGrp.this, "Could not create group!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(addGrp.this, "Please fill in all the fields!", Toast.LENGTH_SHORT).show();
                 }
-                else if(!error){
-                    g.members = new ArrayList<>(Arrays.asList(members));
-                    g.name = text;
-                    g.id = groupID;
+                else {
 
-                    MainActivity.addGrp(g);
-                    pb_add_grp.setVisibility(View.INVISIBLE);
-                    startActivity(new Intent(addGrp.this, MainActivity.class));
-                    finish();
+                    Vector<Integer> memberIds = new Vector<>();
+                    memberIds.add(Uid);
+                    for (String m : members) {
+                        int mId = getsUserIdFromEmailId(m);
+                        if (mId != -1) {
+                            memberIds.add(mId);
+                        } else {
+                            error = true;
+                            //                        pb_add_grp.setVisibility(View.INVISIBLE);
+
+                            Toast.makeText(addGrp.this, "Member id of " + m + " not found!", Toast.LENGTH_SHORT).show();
+                            //                        break;
+                        }
+                    }
+
+                    int groupID = createGroup(new Vector<Integer>(memberIds), Uid, text);
+                    if (groupID == -1) {
+                        pb_add_grp.setVisibility(View.INVISIBLE);
+                        Toast.makeText(addGrp.this, "Could not create group!", Toast.LENGTH_SHORT).show();
+                    } else if (!error) {
+                        g.members = new ArrayList<>(Arrays.asList(members));
+                        g.name = text;
+                        g.id = groupID;
+
+                        MainActivity.addGrp(g);
+                        pb_add_grp.setVisibility(View.INVISIBLE);
+                        startActivity(new Intent(addGrp.this, MainActivity.class));
+                        finish();
+                    }
                 }
             }
         });
