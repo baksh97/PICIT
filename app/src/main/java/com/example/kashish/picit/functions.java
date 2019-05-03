@@ -94,8 +94,15 @@ public class functions {
             }
 
             for(int i: albums){
-                String albumName = getAlbumNameFromId(i);
-                String albumPath = chatFolder+"/"+"album_"+albumName+"\t"+String.valueOf(i);
+                String albumName = getAlbumNameFromAlbumId(i);
+
+
+                Log.d(TAG,"albumName is: "+albumName);
+                File chatFile = new File(userFolder,chatFolder);
+
+                if(!chatFile.exists())chatFile.mkdir();
+
+                String albumPath = albumName+"\t"+String.valueOf(i);
 
 //                File albumDirectory=new File(context.getFilesDir(),albumPath);
 //                albumDirectory.mkdir();
@@ -103,7 +110,7 @@ public class functions {
                 Vector<Integer> imageInAlbum = getPicturesInAlbum(i);
                 for(int j: imageInAlbum) {
                     String picName = String.valueOf(j)+".jpg";
-                    downloadImaeFromFirebaseStorage(context,userFolder,albumPath,picName);
+                    downloadImaeFromFirebaseStorage(context,chatFile,albumPath,picName);
                     Log.d(TAG,"saving image in folder: "+albumPath);
                 }
             }
@@ -146,7 +153,7 @@ public class functions {
                     // Handle any errors
 //                    count++;
 //                    Log.d(TAG, "count increased: "+count);
-                    Toast.makeText(context, "Could not download image " + imageName, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, exception.getMessage(), Toast.LENGTH_SHORT).show();
                 }
             });
         }
@@ -246,9 +253,6 @@ public class functions {
 //        return 1;
 //    }
 
-    public static String getAlbumNameFromId(int id){
-        return "";
-    }
 
     public static Vector<String> getUsersInGroup(int groupId) {
 
@@ -1221,6 +1225,41 @@ public class functions {
             e.printStackTrace();
         }
         return false;
+    }
+
+    public static String getAlbumNameFromAlbumId(int albumId) {
+
+        try {
+
+            Socket client = new Socket(serverName, port);
+            OutputStream outToServer = client.getOutputStream();
+            ObjectOutputStream out = new ObjectOutputStream(outToServer);
+
+            JSONObject obj = new JSONObject();
+            obj.put("Function","getAlbumNameFromAlbumId");
+            obj.put("albumId",albumId);
+
+            String objstr = obj.toString();
+            JSONParser parser = new JSONParser();
+            JSONObject json = (JSONObject) parser.parse(objstr);
+            out.writeObject(objstr);
+
+            InputStream inFromServer = client.getInputStream();
+            ObjectInputStream in = new ObjectInputStream(inFromServer);
+
+            String objrecvd = (String)in.readObject();
+
+            JSONObject jsonrecvd = (JSONObject) parser.parse(objrecvd);
+
+
+            String answer = (String)jsonrecvd.get("answer");
+
+            client.close();
+            return answer;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public static Vector<Integer> getAlbumsInGroup(int groupId) {

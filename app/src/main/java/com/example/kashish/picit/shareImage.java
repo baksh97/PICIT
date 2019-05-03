@@ -10,20 +10,21 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import java.util.ArrayList;
 
+import static com.example.kashish.picit.MainActivity.Uid;
 import static com.example.kashish.picit.functions.shareAlbumWithGroup;
+import static com.example.kashish.picit.functions.sharePictureToGroup;
 
-public class shareAlbum extends AppCompatActivity {
+public class shareImage extends AppCompatActivity {
 
     static ArrayList<Integer> selectedGroupsIds = new ArrayList<>();
 
     RecyclerView rv_shareAlbum;
-    int albumId;
+    int picId;
     private String TAG = "shareAlbum";
     ProgressBar pb_share_album;
     void initViews(){
@@ -42,7 +43,7 @@ public class shareAlbum extends AppCompatActivity {
         selectedGroupsIds = new ArrayList<>();
 
         Intent intent = getIntent();
-        albumId = intent.getIntExtra("albumID",-1);
+        picId = intent.getIntExtra("picID",-1);
 
         rv_shareAlbum.setLayoutManager(new LinearLayoutManager(this));
         ArrayList<String> chats = new ArrayList<>(MainActivity.active_chats);
@@ -71,12 +72,12 @@ public class shareAlbum extends AppCompatActivity {
                 if(selectedGroupsIds.size()==0){
                     pb_share_album.setVisibility(View.INVISIBLE);
 
-                    Toast.makeText(this, "Please select atleast 1 group to share album!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Please select atleast 1 group to share image!", Toast.LENGTH_SHORT).show();
                 }
                 else {
                     for(int i: selectedGroupsIds) {
-                        Log.d(TAG, "Sharing album: "+albumId+" with group: "+i);
-                        boolean b = shareAlbumWithGroup(albumId, i);
+                        Log.d(TAG, "Sharing image: "+picId+" with group: "+i);
+                        boolean b = sharePictureToGroup(picId,Uid, i);
                         if(!b){
                             Toast.makeText(this, "Could not share with group: "+i, Toast.LENGTH_SHORT).show();
                         }

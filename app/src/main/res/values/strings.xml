@@ -1,3 +1,4 @@
 <resources>
+    <string name="error">Please avoid using \t \n , . and _ in the names.</string>
     <string name="app_name">PICIT</string>
 </resources>

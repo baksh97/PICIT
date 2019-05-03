@@ -51,7 +51,10 @@ public class Signup extends AppCompatActivity {
                 if(task.isSuccessful()){
 //                    Toast.makeText(context, "Registration sucessful", Toast.LENGTH_SHORT).show();
                     pb_signup.setVisibility(View.INVISIBLE);
-                    context.startActivity(new Intent(context, MainActivity.class));
+                    Intent i = new Intent(context, MainActivity.class);
+                    i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    context.startActivity(i);
+
                     finish();
                 }
                 else{
@@ -132,9 +135,13 @@ public class Signup extends AppCompatActivity {
                     String password = password_tl.getEditText().getText().toString();
                     String userName = username_til.getEditText().getText().toString();
 
-                    if (password.equals("") || email.equals("") || userName.equals("")) {
+                    String[] splitted = userName.split("[\t\n _.,]+");
+                    if(splitted.length>=2){
                         pb_signup.setVisibility(View.INVISIBLE);
-
+                        Toast.makeText(Signup.this, R.string.error, Toast.LENGTH_SHORT).show();
+                    }
+                    else if (password.equals("") || email.equals("") || userName.equals("")) {
+                        pb_signup.setVisibility(View.INVISIBLE);
                         Toast.makeText(Signup.this, "Please enter correct information!", Toast.LENGTH_SHORT).show();
                     } else {
 

@@ -153,7 +153,12 @@ public class create_album extends AppCompatActivity {
                 pb_create_album.setVisibility(View.VISIBLE);
 
                 String albumName = albumName_et.getText().toString();
-                if(albumName.equals("")){
+                String[] splitted = albumName.split("[\t\n _.,]+");
+                if(splitted.length>=2){
+                    pb_create_album.setVisibility(View.INVISIBLE);
+                    Toast.makeText(this, R.string.error, Toast.LENGTH_SHORT).show();
+                }
+                else if(albumName.equals("")){
                     pb_create_album.setVisibility(View.INVISIBLE);
 
                     Toast.makeText(this, "Please enter a valid album Name!", Toast.LENGTH_SHORT).show();

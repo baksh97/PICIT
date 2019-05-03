@@ -39,11 +39,14 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.Vector;
 
 import static com.example.kashish.picit.functions.getEmailOfUser;
 import static com.example.kashish.picit.functions.getGroupsOfUser;
 import static com.example.kashish.picit.functions.getPicturesInGroup;
+import static com.example.kashish.picit.functions.getUpdates;
 import static com.example.kashish.picit.functions.getsUserIdFromEmailId;
 import static com.example.kashish.picit.functions.saveImageOnFirebaseStorage;
 //import static com.example.kashish.picit.functions.saveImageOnS3;
@@ -257,6 +260,24 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+    private void refreshTime() //Call this method to refresh time
+    {
+        new Timer().schedule(new TimerTask() {
+            @Override
+            public void run() {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+
+                        refresh();
+//                        txtV_Time.setText(getTimeMethod("hh:mm:ss a")); //hours,Min and Second with am/pm
+//                        txtV_Date.setText(getTimeMethod("dd-MMM-yy")); //You have to pass your DateFormate in getTimeMethod()
+                    };
+                });
+            }
+        }, 0, 2000);//1000 is a Refreshing Time (1second)
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
@@ -264,6 +285,42 @@ public class MainActivity extends AppCompatActivity {
         return super.onCreateOptionsMenu(menu);
     }
 
+
+    void refresh(){
+//        Thread thread = new Thread() {
+//            @Override
+//            public void run() {
+////                try { Thread.sleep(2000); }
+////                catch (InterruptedException e) {}
+//
+//                runOnUiThread(new Runnable() {
+//                    @Override
+//                    public void run() {
+                        initChats();
+                        for(int j=0;j<active_chats.size();j++){
+                            getUpdates(MainActivity.this, active_chats.get(j),active_chat_ids.get(j));
+                        }
+
+                        for(int j=0;j<inactive_chats.size();j++){
+                            getUpdates(MainActivity.this, inactive_chats.get(j),inactive_chat_ids.get(j));
+                        }
+//                    }
+//                });
+//            }
+//        };
+//        thread.start();
+//        thread.start();
+//                initChats();
+//                for(int j=0;j<active_chats.size();j++){
+//                    getUpdates(MainActivity.this, active_chats.get(j),active_chat_ids.get(j));
+//                }
+//
+//                for(int j=0;j<inactive_chats.size();j++){
+//                    getUpdates(MainActivity.this, inactive_chats.get(j),inactive_chat_ids.get(j));
+//                }
+//            }
+//        });
+    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -275,7 +332,7 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(i);
                 break;
             case R.id.refresh_main:
-                initChats();
+                refresh();
                 break;
             case R.id.signout_main:
                 signout();
@@ -320,6 +377,7 @@ public class MainActivity extends AppCompatActivity {
             inactive_adapter = new main_rv_adapter_inactive(inactive_chats, inactive_chat_ids, null, this);
 
             initChats();
+//            refreshTime();
 
             rv_main_active.setLayoutManager(new LinearLayoutManager(this));
             rv_main_inactive.setLayoutManager(new LinearLayoutManager(this));

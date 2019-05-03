@@ -29,12 +29,13 @@ public class shareAlbum_rv_adapter extends RecyclerView.Adapter<shareAlbum_rv_ad
     private ArrayList<Integer> chatIds;
     private Context mContext;
 
-    ArrayList<Integer> selectedGroups = shareAlbum.selectedGroupsIds;
+    ArrayList<Integer> selectedGroups;
 
-    public shareAlbum_rv_adapter(ArrayList<String> chatNames,ArrayList<Integer> chatIds,Context mContext) {
+    public shareAlbum_rv_adapter(ArrayList<Integer> selectedgroupIds,ArrayList<String> chatNames,ArrayList<Integer> chatIds,Context mContext) {
         this.chatNames = chatNames;
         this.mContext = mContext;
         this.chatIds = chatIds;
+        this.selectedGroups = selectedgroupIds;
     }
     @NonNull
     @Override

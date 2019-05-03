@@ -46,45 +46,53 @@ public class addGrp extends AppCompatActivity {
                 boolean error = false;
                 Group g = new Group();
                 String text = grpName_til.getEditText().getText().toString();
-                String allmember = grpMembers_til.getEditText().getText().toString();
-                String [] members = allmember.split(",");
+                String[] splitted = text.split("[\t\n _.,]+");
+                if(splitted.length==1){
+                    String allmember = grpMembers_til.getEditText().getText().toString();
+                    String[] members = allmember.split("[^A-Za-z0-9.@_]+");
 
-                if(text=="" || allmember==""){
-                    pb_add_grp.setVisibility(View.INVISIBLE);
-                    Toast.makeText(addGrp.this, "Please fill in all the fields!", Toast.LENGTH_SHORT).show();
-                }
-                else {
+                    if(text=="" || allmember==""){
+                        pb_add_grp.setVisibility(View.INVISIBLE);
+                        Toast.makeText(addGrp.this, "Please fill in all the fields!", Toast.LENGTH_SHORT).show();
+                    }
+                    else {
 
-                    Vector<Integer> memberIds = new Vector<>();
-                    memberIds.add(Uid);
-                    for (String m : members) {
-                        int mId = getsUserIdFromEmailId(m);
-                        if (mId != -1) {
-                            memberIds.add(mId);
-                        } else {
-                            error = true;
-                            //                        pb_add_grp.setVisibility(View.INVISIBLE);
+                        Vector<Integer> memberIds = new Vector<>();
+                        memberIds.add(Uid);
+                        for (String m : members) {
+                            int mId = getsUserIdFromEmailId(m);
+                            if (mId != -1) {
+                                memberIds.add(mId);
+                            } else {
+                                error = true;
+                                //                        pb_add_grp.setVisibility(View.INVISIBLE);
 
-                            Toast.makeText(addGrp.this, "Member id of " + m + " not found!", Toast.LENGTH_SHORT).show();
-                            //                        break;
+                                Toast.makeText(addGrp.this, "Member id of " + m + " not found!", Toast.LENGTH_SHORT).show();
+                                //                        break;
+                            }
+                        }
+
+                        int groupID = createGroup(new Vector<Integer>(memberIds), Uid, text);
+                        if (groupID == -1) {
+                            pb_add_grp.setVisibility(View.INVISIBLE);
+                            Toast.makeText(addGrp.this, "Could not create group!", Toast.LENGTH_SHORT).show();
+                        } else if (!error) {
+                            g.members = new ArrayList<>(Arrays.asList(members));
+                            g.name = text;
+                            g.id = groupID;
+
+                            MainActivity.addGrp(g);
+                            pb_add_grp.setVisibility(View.INVISIBLE);
+                            startActivity(new Intent(addGrp.this, MainActivity.class));
+                            finish();
                         }
                     }
-
-                    int groupID = createGroup(new Vector<Integer>(memberIds), Uid, text);
-                    if (groupID == -1) {
-                        pb_add_grp.setVisibility(View.INVISIBLE);
-                        Toast.makeText(addGrp.this, "Could not create group!", Toast.LENGTH_SHORT).show();
-                    } else if (!error) {
-                        g.members = new ArrayList<>(Arrays.asList(members));
-                        g.name = text;
-                        g.id = groupID;
-
-                        MainActivity.addGrp(g);
-                        pb_add_grp.setVisibility(View.INVISIBLE);
-                        startActivity(new Intent(addGrp.this, MainActivity.class));
-                        finish();
-                    }
                 }
+                else if(splitted.length>=2){
+                    pb_add_grp.setVisibility(View.INVISIBLE);
+                    Toast.makeText(addGrp.this, R.string.error, Toast.LENGTH_SHORT).show();
+                }
+
             }
         });
 

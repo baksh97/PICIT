@@ -7,6 +7,12 @@
         android:title="Filters"
         app:showAsAction="always"/>
 
+    <item
+        android:id="@+id/share_image"
+        android:title="Share"
+        app:showAsAction="always"/>
+
+
     <!--<item-->
         <!--android:id="@+id/delete_image"-->
         <!--android:title="Delete"-->

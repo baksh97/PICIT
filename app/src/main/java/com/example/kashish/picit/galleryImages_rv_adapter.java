@@ -19,6 +19,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.util.ArrayList;
 
+import static com.example.kashish.picit.MainActivity.Uid;
+
 public class galleryImages_rv_adapter extends RecyclerView.Adapter<galleryImages_rv_adapter.ViewHolder>{
 
     private static final String TAG = "main_rv_adapter";
@@ -180,6 +182,31 @@ public class galleryImages_rv_adapter extends RecyclerView.Adapter<galleryImages
                                 intent.putExtra("image", byteArray);
                                 mContext.startActivity(intent);
                             }
+                            break;
+
+                        case R.id.share_image:
+
+
+                                position = 3 * getAdapterPosition();
+                                switch (v.getId()) {
+                                    case R.id.imageView_row_gallery_1: {
+                                        //                    position
+                                        break;
+                                    }
+                                    case R.id.imageView_row_gallery_2: {
+                                        position += 1;
+                                        break;
+                                    }
+                                    case R.id.imageView_row_gallery_3: {
+                                        position += 2;
+                                        break;
+                                    }
+                                }
+                                Intent intent = new Intent(mContext,shareImage.class);
+                                intent.putExtra("picID",Integer.parseInt(imageNames.get(position).substring(0,imageNames.get(position).length()-4)));
+                                mContext.startActivity(intent);
+//                                sharePictureToGroup(imageNames.get(position).substring(0,imageNames.get(position).length()-4), Uid, );
+
                             break;
 
 //                        case R.id.delete_image:
