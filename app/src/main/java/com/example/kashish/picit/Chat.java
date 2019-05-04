@@ -3,6 +3,7 @@ package com.example.kashish.picit;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.AsyncTask;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -65,7 +66,7 @@ public class Chat extends AppCompatActivity {
                 startActivity(intent2);
                 break;
             case R.id.refresh_chat:
-                if(!refreshingChat) getUpdates(Chat.this, currentChatName,chatID);
+                if(!refreshingChat) new Refresh().execute();
                 else Toast.makeText(this, "Already refreshing a chat! Please wait.", Toast.LENGTH_SHORT).show();
                 break;
 
@@ -105,4 +106,14 @@ public class Chat extends AppCompatActivity {
         galleryImages_rv_adapter adapter = new galleryImages_rv_adapter(imageFiles,names,images,this);
         rv_chat.setAdapter(adapter);
     }
+
+    class Refresh extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void ... params) {
+            getUpdates(Chat.this, currentChatName,chatID);
+            return null;
+        }
+    }
+
 }

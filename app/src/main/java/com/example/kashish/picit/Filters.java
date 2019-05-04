@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
+import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
@@ -108,7 +109,7 @@ public class Filters extends AppCompatActivity {
 
                 if(position!=0) {
                     pb_filters.setVisibility(View.VISIBLE);
-
+                    new FilterApply().execute(position);
 //                    final Handler h = new Handler() {
 //                        public void handleMessage(Message msg){
 //                            if(msg.what == 0){
@@ -121,27 +122,9 @@ public class Filters extends AppCompatActivity {
 //                        @Override
 //                        public void run() {
 //                        b = intent.getByteArrayExtra("image");
-                            byte[] b2 = applyFilter(b, filterNames.get(position));
 
-                            if (b2 == null) {
-                                Log.d(TAG, "here: b2 is null");
-                                pb_filters.setVisibility(View.INVISIBLE);
-
-//                                h.sendEmptyMessage(0);
-                                Toast.makeText(Filters.this, "Could not apply filter! Is there a face in this image?", Toast.LENGTH_SHORT).show();
-                            } else {
-//                                Toast.makeText(Filters.this, "Changing background!", Toast.LENGTH_SHORT).show();
-
-                                Bitmap bbmp = BitmapFactory.decodeByteArray(b2, 0, b2.length);
-
-                                Log.d(TAG, "new bitmap created!");
-
-                                filteredImage_iv.setImageBitmap(bbmp);
-                                pb_filters.setVisibility(View.INVISIBLE);
-
-//                            }
 //                        filteredImage_iv.setBackground(functions.bitmap2Drawable(bbmp,Filters.this));
-                        }
+//                        }
 //                    }));
 
                 }
@@ -161,4 +144,45 @@ public class Filters extends AppCompatActivity {
 //        filters_spinner.set
 
     }
+
+    class FilterApply extends AsyncTask<Integer, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Integer ... params) {
+            int position = (int)params[0];
+
+            final byte[] b2 = applyFilter(b, filterNames.get(position));
+
+            if (b2 == null) {
+                Log.d(TAG, "here: b2 is null");
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        pb_filters.setVisibility(View.INVISIBLE);
+//                                h.sendEmptyMessage(0);
+                        Toast.makeText(Filters.this, "Could not apply filter! Is there a face in this image?", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            } else {
+//                                Toast.makeText(Filters.this, "Changing background!", Toast.LENGTH_SHORT).show();
+
+
+                Log.d(TAG, "new bitmap created!");
+                final Bitmap bbmp = BitmapFactory.decodeByteArray(b2, 0, b2.length);
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+
+                        filteredImage_iv.setImageBitmap(bbmp);
+                        pb_filters.setVisibility(View.INVISIBLE);
+                    }
+                });
+
+
+            }
+            return null;
+        }
+    }
+
 }

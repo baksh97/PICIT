@@ -7,6 +7,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Environment;
 import android.os.StrictMode;
 import android.provider.MediaStore;
@@ -296,7 +297,7 @@ public class MainActivity extends AppCompatActivity {
 //                runOnUiThread(new Runnable() {
 //                    @Override
 //                    public void run() {
-                        initChats();
+//                        initChats();
                         for(int j=0;j<active_chats.size();j++){
                             getUpdates(MainActivity.this, active_chats.get(j),active_chat_ids.get(j));
                         }
@@ -325,14 +326,23 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
-        switch(item.getItemId()){
+        switch(item.getItemId()) {
             case R.id.show_albums:
                 Intent i = new Intent(MainActivity.this, galleryAlbums.class);
                 i.putExtra("file", userFolder);
                 startActivity(i);
                 break;
             case R.id.refresh_main:
-                refresh();
+//                Thread thread = new Thread() {
+//                                @Override
+//                    public void run() {
+//                                    Log.d(TAG,)
+//                                    refresh();
+                initChats();
+                (new Refresh()).execute();
+//                                }
+//                };
+//                thread.run();
                 break;
             case R.id.signout_main:
                 signout();
@@ -440,6 +450,16 @@ public class MainActivity extends AppCompatActivity {
         a.addCategory(Intent.CATEGORY_HOME);
         a.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(a);
+    }
+
+    class Refresh extends AsyncTask<Void, Void, Void>{
+
+        @Override
+        protected Void doInBackground(Void ... params) {
+
+            refresh();
+            return null;
+        }
     }
 
 }
